@@ -1,0 +1,27 @@
+===== caretaker: run =====
+00:32:13 CONNECTED  as caretaker: new session
+00:32:13 SUBSCRIBED casa-jaro.maintenance
+00:32:13 SUBSCRIBED molo-hub.maintenance
+00:32:15 LIVE       #3 casa-jaro.maintenance from maintenance-desk
+                    Leaking faucet in shared CR: acknowledged
+                    Plumber scheduled for tomorrow morning. Ticket k1, high priority.
+00:32:16 LIVE       #6 casa-jaro.maintenance from maintenance-desk
+                    Leaking faucet in shared CR: in progress
+                    Replacement part ordered; the faucet will be fixed when it arrives.
+00:32:22 OFFLINE    connection to the broker was reset
+00:32:22 RECONNECT  trying again in 1s
+00:32:23 CONNECTED  as caretaker: resumed durable session, 0 queued message(s) waiting
+00:32:23            durable subscriptions: casa-jaro.maintenance, molo-hub.maintenance
+00:32:23 SUBSCRIBED casa-jaro.maintenance (already subscribed)
+00:32:23 SUBSCRIBED molo-hub.maintenance (already subscribed)
+00:32:24 LIVE       #10 casa-jaro.maintenance from maintenance-desk
+                    Aircon not cooling in Room 101: technician visit
+                    A technician will check the unit tomorrow at 10:00 AM. Please leave the room accessible.
+00:32:24 OFFLINE    connection to the broker was reset
+00:32:24 RECONNECT  trying again in 1s
+00:32:25 CONNECTED  as caretaker: resumed durable session, 0 queued message(s) waiting
+00:32:25            durable subscriptions: casa-jaro.maintenance, molo-hub.maintenance
+00:32:25 SUBSCRIBED casa-jaro.maintenance (already subscribed)
+00:32:25 SUBSCRIBED molo-hub.maintenance (already subscribed)
+00:32:43 OFFLINE    connection to the broker was reset
+00:32:43 RECONNECT  trying again in 1s

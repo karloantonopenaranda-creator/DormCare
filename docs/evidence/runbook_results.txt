@@ -1,0 +1,32 @@
+Demo runbook sections 2-3 and both extras, run through the real .bat files in a folder with spaces and brackets,
+23 November 2026, by an automated console driver used during development (not part of the project).
+It is not a rehearsal by the group. Crash target selection was tested with the kill stubbed out, and the selected
+test process was then killed directly. The only script change was opening the windows minimised.
+
+[PASS] start_demo opens 6 programs in [Runbook Copy (1)]
+[PASS] launcher: 6 programs
+[PASS] subscribers subscribed 
+[PASS] 1 list 
+[PASS] 2 only Juan 
+[PASS] 3 only Jerome 
+[PASS] 4 fan-out 
+[PASS] crash script selects only tenant-juan
+[PASS] 5 crash detected 
+[PASS] 6 queued 
+[PASS] 7 caretaker live 
+[PASS] 8 status 3 queued 
+[PASS] 9 catch-up x3, no topics 
+[PASS] 10 drained 
+[PASS] crash script selects only tenant-jerome
+[PASS] 11 Jerome queued 
+[PASS] crash script selects only broker
+[PASS] 12 subscribers notice broker crash 
+[PASS] 13 recovery 
+[PASS] 14 Jerome catch-up 
+[PASS] 15 publisher recovers 
+[PASS] crash script selects only broker
+[PASS] extra: status typed right after broker restart 
+[PASS] optional: crash before ACK 
+[PASS] optional: duplicate ignored 
+[PASS] optional: lost PUBACK 
+[PASS] optional: one copy to Juan 

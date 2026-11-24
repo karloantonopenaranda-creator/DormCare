@@ -1,0 +1,17 @@
+Automated test matrix, 23 November 2026. Every run used a copy extracted from the submission archive.
+Command: python -m unittest discover -s tests -t . -v
+
+Windows      Python 3.14.6, run 1             Ran 95 tests in 129.812s | OK
+Windows      Python 3.14.6, run 2             Ran 95 tests in 120.842s | OK
+Windows      Python 3.13.5                    Ran 95 tests in 109.711s | OK
+Windows      Python 3.11.15                   Ran 95 tests in 99.350s | OK
+Linux WSL2   Python 3.12.3, run 1             Ran 95 tests in 99.598s | OK (skipped=9)
+Linux WSL2   Python 3.12.3, run 2             Ran 95 tests in 113.036s | OK (skipped=9)
+Linux WSL2   Python 3.12.3, run 3             Ran 95 tests in 53.781s | OK (skipped=9)
+Linux WSL2   Python 3.12.3, run 4             Ran 95 tests in 50.881s | OK (skipped=9)
+Linux WSL2   Python 3.12.3, run 5             Ran 95 tests in 51.622s | OK (skipped=9)
+
+The 9 tests skipped on Linux test Windows batch files and Windows child-process behaviour.
+One further Linux run was interrupted from outside before it finished and is not counted.
+An earlier Linux run failed test I1 because of a timeout in the test itself. See Section 7 of the Fault Test Report.
+Not tested: macOS, Python 3.10, clients and broker on separate machines, power loss.

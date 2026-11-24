@@ -1,0 +1,40 @@
+===== manager-office: run =====
+00:32:14 CONNECTED  publisher manager-office -> broker 127.0.0.1:56732
+Commands:
+  list                                   show your scripted DormCare events
+  send <n> | send all                    publish scripted event n (or every event)
+  pub <topic> <title> [| <body>]         publish your own message
+  status                                 show every subscriber's queue on the broker
+  help                                   show this help
+  quit                                   disconnect and exit
+manager-office>    1. casa-jaro.announcements                  Fire safety inspection - Oct 16, 9:00 AM
+   2. molo-hub.announcements                   Welcome to our new tenants!
+   3. casa-jaro.announcements                  Scheduled water interruption on Oct 18
+   4. casa-jaro.billing                        October rent is due on Oct 15
+   5. molo-hub.billing                         October rent is due on Oct 10
+   6. casa-jaro.billing                        September electricity bill issued
+   7. casa-jaro.announcements                  Pest control this Saturday, 8:00 AM
+   8. dormcare.verification                    Molo Bedspace Hub submitted documents for review
+manager-office> 00:32:14 PUBACK     #1 stored by broker -> queued for 1 subscriber(s) of casa-jaro.announcements
+manager-office> 00:32:15 PUBACK     #2 stored by broker -> queued for 1 subscriber(s) of molo-hub.announcements
+manager-office> 00:32:16 PUBACK     #4 stored by broker -> queued for 1 subscriber(s) of casa-jaro.announcements
+manager-office> 00:32:16 PUBACK     #5 stored by broker -> queued for 1 subscriber(s) of casa-jaro.billing
+manager-office>   SUBSCRIBER       STATE    QUEUED  TOPICS
+  caretaker        online        0  casa-jaro.maintenance, molo-hub.maintenance
+  tenant-jerome    online        0  molo-hub.announcements, molo-hub.billing
+  tenant-juan      offline       3  casa-jaro.announcements, casa-jaro.billing, casa-jaro.maintenance
+  publishers online: maintenance-desk, manager-office
+manager-office>   SUBSCRIBER       STATE    QUEUED  TOPICS
+  caretaker        online        0  casa-jaro.maintenance, molo-hub.maintenance
+  tenant-jerome    online        0  molo-hub.announcements, molo-hub.billing
+  tenant-juan      online        0  casa-jaro.announcements, casa-jaro.billing, casa-jaro.maintenance
+  publishers online: maintenance-desk, manager-office
+manager-office> 00:32:19 PUBACK     #7 stored by broker -> queued for 1 subscriber(s) of casa-jaro.announcements
+manager-office>   SUBSCRIBER       STATE    QUEUED  TOPICS
+  caretaker        online        0  casa-jaro.maintenance, molo-hub.maintenance
+  tenant-jerome    online        0  molo-hub.announcements, molo-hub.billing
+  tenant-juan      offline       1  casa-jaro.announcements, casa-jaro.billing, casa-jaro.maintenance
+  publishers online: maintenance-desk, manager-office
+manager-office> 00:32:21 PUBACK     #8 stored by broker -> queued for 1 subscriber(s) of molo-hub.billing
+manager-office> 00:32:21 PUBACK     #9 stored by broker -> queued for 1 subscriber(s) of molo-hub.announcements
+manager-office> 

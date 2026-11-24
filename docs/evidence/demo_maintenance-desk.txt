@@ -1,0 +1,15 @@
+===== maintenance-desk: run =====
+00:32:14 CONNECTED  publisher maintenance-desk -> broker 127.0.0.1:56732
+Commands:
+  list                                   show your scripted DormCare events
+  send <n> | send all                    publish scripted event n (or every event)
+  pub <topic> <title> [| <body>]         publish your own message
+  status                                 show every subscriber's queue on the broker
+  help                                   show this help
+  quit                                   disconnect and exit
+maintenance-desk> 00:32:15 PUBACK     #3 stored by broker -> queued for 2 subscriber(s) of casa-jaro.maintenance
+maintenance-desk> 00:32:16 PUBACK     #6 stored by broker -> queued for 2 subscriber(s) of casa-jaro.maintenance
+maintenance-desk> 00:32:23 RETRY      maintenance-desk-feef757a77cf4d2c: [WinError 10054] An existing connection was forcibly closed by the remote host. Reconnecting and re-sending the SAME msg_id (attempt 2)
+00:32:24 CONNECTED  publisher maintenance-desk -> broker 127.0.0.1:56732
+00:32:24 PUBACK     #10 stored by broker -> queued for 2 subscriber(s) of casa-jaro.maintenance
+maintenance-desk> 

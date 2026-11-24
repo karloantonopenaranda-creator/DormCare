@@ -1,0 +1,22 @@
+# Runtime data: broker database and subscriber logs
+data/
+*.db
+*.db-wal
+*.db-shm
+
+# Local backups and built submission archives
+.backup/
+DormCare_Submission*.zip
+
+# Python
+__pycache__/
+*.pyc
+
+# Editors / OS
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
+
+# Word lock files
+~$*

@@ -1,0 +1,5 @@
+===== one-shot-publisher: run =====
+00:32:26 CONNECTED  publisher manager-office-2 -> broker 127.0.0.1:56732
+00:32:28 RETRY      manager-office-2-b45a81b9a0824f1d: no PUBACK within 2s. Reconnecting and re-sending the SAME msg_id (attempt 2)
+00:32:28 CONNECTED  publisher manager-office-2 -> broker 127.0.0.1:56732
+00:32:28 PUBACK     #11: broker already had this message (duplicate detected, not routed twice)

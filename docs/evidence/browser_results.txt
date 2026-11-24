@@ -1,0 +1,22 @@
+Output of: node tests/browser/browser_check.mjs, headless Microsoft Edge on Windows, 23 November 2026
+
+[PASS] E01 dashboard: four subscribers online
+[PASS] E02 dashboard: topic filtering
+[PASS] E03 dashboard: filtering, other property
+[PASS] E04 dashboard: fan-out
+[PASS] E05 dashboard: subscriber crash
+[PASS] E06 dashboard: three queued
+[PASS] E07 dashboard: catch-up
+[PASS] E08 dashboard: broker crash
+[PASS] E09 dashboard: broker recovery
+[PASS] E10 dashboard: duplicate ignored
+[PASS] E11 dashboard: lost PUBACK
+[PASS] E12 website: announcement reaches phone and bell
+[PASS] E13 website: alert after a data reset is not taken for a duplicate
+[PASS] E14 website: live delivery between two windows
+[PASS] E15 website: alert survives a save from the other window
+[PASS] E16 website: chat survives reload in both windows
+[PASS] E17 website: chat sent during a broker outage is re-sent
+[PASS] E18 website: broker payload cannot inject HTML
+[PASS] E19 no uncaught page errors
+19 passed, 0 failed

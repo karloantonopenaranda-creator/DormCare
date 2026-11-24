@@ -1,0 +1,23 @@
+===== tenant-jerome: run =====
+00:32:13 CONNECTED  as tenant-jerome: new session
+00:32:13 SUBSCRIBED molo-hub.announcements
+00:32:13 SUBSCRIBED molo-hub.billing
+00:32:15 LIVE       #2 molo-hub.announcements from manager-office
+                    Welcome to our new tenants!
+                    Please review the house rules posted in the kitchen. Quiet hours are from 10 PM to 6 AM.
+
+===== tenant-jerome: restarted after broker crash =====
+00:32:23 CONNECTED  as tenant-jerome: resumed durable session, 2 queued message(s) waiting
+00:32:23            durable subscriptions: molo-hub.announcements, molo-hub.billing
+00:32:23 CATCH-UP   #8 molo-hub.billing from manager-office  (queued 2s ago)
+                    October rent is due on Oct 10
+                    Please settle your bedspace rent and submit your GCash or bank reference for verification.
+00:32:23 CATCH-UP   #9 molo-hub.announcements from manager-office  (queued 2s ago)
+                    Quiet hours reminder
+                    Quiet hours are 10 PM to 6 AM.
+00:32:24 OFFLINE    connection to the broker was reset
+00:32:24 RECONNECT  trying again in 1s
+00:32:25 CONNECTED  as tenant-jerome: resumed durable session, 0 queued message(s) waiting
+00:32:25            durable subscriptions: molo-hub.announcements, molo-hub.billing
+00:32:43 OFFLINE    connection to the broker was reset
+00:32:43 RECONNECT  trying again in 1s

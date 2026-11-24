@@ -1,0 +1,6 @@
+Output of: python -m tests.crash_soak, Python 3.14.6 on Windows, 23 November 2026
+
+seed 1809: PASS  confirmed=2000 expected_deliveries=7196 lost=0 misrouted=0 subscribers_out_of_order=0 duplicates=135 broker_kills=5 publisher_retries=12 subscriber_disconnects=171
+seed 7: PASS  confirmed=2000 expected_deliveries=4719 lost=0 misrouted=0 subscribers_out_of_order=0 duplicates=107 broker_kills=5 publisher_retries=12 subscriber_disconnects=140
+seed 42: PASS  confirmed=2000 expected_deliveries=4785 lost=0 misrouted=0 subscribers_out_of_order=0 duplicates=114 broker_kills=5 publisher_retries=12 subscriber_disconnects=140
+3 of 3 runs passed

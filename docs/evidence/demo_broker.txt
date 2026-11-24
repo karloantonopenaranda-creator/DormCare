@@ -1,0 +1,103 @@
+===== broker: run =====
+00:32:12 LISTEN     Broker listening on 127.0.0.1:56732  (store: <temp-dir>\broker.db)
+00:32:12 RECOVER    0 durable subscription(s) for 0 client(s), 0 message(s) waiting in queues, 0 message(s) in the log
+00:32:13 ONLINE     subscriber tenant-juan from 127.0.0.1:56735: new session
+00:32:13 SUBSCRIBE  tenant-juan -> casa-jaro.announcements
+00:32:13 SUBSCRIBE  tenant-juan -> casa-jaro.maintenance
+00:32:13 SUBSCRIBE  tenant-juan -> casa-jaro.billing
+00:32:13 ONLINE     subscriber tenant-jerome from 127.0.0.1:56736: new session
+00:32:13 SUBSCRIBE  tenant-jerome -> molo-hub.announcements
+00:32:13 SUBSCRIBE  tenant-jerome -> molo-hub.billing
+00:32:13 ONLINE     subscriber caretaker from 127.0.0.1:56737: new session
+00:32:13 SUBSCRIBE  caretaker -> casa-jaro.maintenance
+00:32:13 SUBSCRIBE  caretaker -> molo-hub.maintenance
+00:32:14 ONLINE     publisher manager-office from 127.0.0.1:56738
+00:32:14 ONLINE     publisher maintenance-desk from 127.0.0.1:56739
+00:32:14 PUBLISH    #1 casa-jaro.announcements from manager-office "Fire safety inspection - Oct 16, 9:00 AM"
+                    -> 1 of 3 subscriber(s): tenant-juan (online)
+00:32:14 DELIVER    #1 -> tenant-juan
+00:32:14 ACK        #1 <- tenant-juan (removed from its queue; 0 left)
+00:32:15 PUBLISH    #2 molo-hub.announcements from manager-office "Welcome to our new tenants!"
+                    -> 1 of 3 subscriber(s): tenant-jerome (online)
+00:32:15 DELIVER    #2 -> tenant-jerome
+00:32:15 ACK        #2 <- tenant-jerome (removed from its queue; 0 left)
+00:32:15 PUBLISH    #3 casa-jaro.maintenance from maintenance-desk "Leaking faucet in shared CR: acknowledged"
+                    -> 2 of 3 subscriber(s): caretaker (online), tenant-juan (online)
+00:32:15 DELIVER    #3 -> tenant-juan
+00:32:15 DELIVER    #3 -> caretaker
+00:32:15 ACK        #3 <- caretaker (removed from its queue; 0 left)
+00:32:15 ACK        #3 <- tenant-juan (removed from its queue; 0 left)
+00:32:15 OFFLINE    subscriber tenant-juan: connection reset (client process ended abruptly). 0 message(s) waiting; new messages will be queued until it reconnects
+00:32:16 PUBLISH    #4 casa-jaro.announcements from manager-office "Scheduled water interruption on Oct 18"
+                    -> 1 of 3 subscriber(s): tenant-juan (offline: queued)
+00:32:16 PUBLISH    #5 casa-jaro.billing from manager-office "October rent is due on Oct 15"
+                    -> 1 of 3 subscriber(s): tenant-juan (offline: queued)
+00:32:16 PUBLISH    #6 casa-jaro.maintenance from maintenance-desk "Leaking faucet in shared CR: in progress"
+                    -> 2 of 3 subscriber(s): caretaker (online), tenant-juan (offline: queued)
+00:32:16 DELIVER    #6 -> caretaker
+00:32:16 ACK        #6 <- caretaker (removed from its queue; 0 left)
+00:32:17 ONLINE     subscriber tenant-juan from 127.0.0.1:56741: resumed session, 3 durable subscription(s), 3 message(s) waiting
+00:32:17 DELIVER    #4 -> tenant-juan
+00:32:17 DELIVER    #5 -> tenant-juan
+00:32:17 DELIVER    #6 -> tenant-juan
+00:32:17 ACK        #4 <- tenant-juan (removed from its queue; 2 left)
+00:32:17 ACK        #5 <- tenant-juan (removed from its queue; 1 left)
+00:32:17 ACK        #6 <- tenant-juan (removed from its queue; 0 left)
+00:32:18 OFFLINE    subscriber tenant-juan: connection reset (client process ended abruptly). 0 message(s) waiting; new messages will be queued until it reconnects
+00:32:19 ONLINE     subscriber tenant-juan from 127.0.0.1:56742: resumed session, 3 durable subscription(s), 0 message(s) waiting
+00:32:19 PUBLISH    #7 casa-jaro.announcements from manager-office "Pest control this Saturday, 8:00 AM"
+                    -> 1 of 3 subscriber(s): tenant-juan (online)
+00:32:19 DELIVER    #7 -> tenant-juan
+00:32:19 OFFLINE    subscriber tenant-juan: connection reset (client process ended abruptly). 1 message(s) waiting; new messages will be queued until it reconnects
+00:32:21 ONLINE     subscriber tenant-juan from 127.0.0.1:56743: resumed session, 3 durable subscription(s), 1 message(s) waiting
+00:32:21 REDELIVER  #7 -> tenant-juan (attempt 2: earlier copy was never ACKed)
+00:32:21 ACK        #7 <- tenant-juan (removed from its queue; 0 left)
+00:32:21 OFFLINE    subscriber tenant-jerome: connection reset (client process ended abruptly). 0 message(s) waiting; new messages will be queued until it reconnects
+00:32:21 PUBLISH    #8 molo-hub.billing from manager-office "October rent is due on Oct 10"
+                    -> 1 of 3 subscriber(s): tenant-jerome (offline: queued)
+00:32:21 PUBLISH    #9 molo-hub.announcements from manager-office "Quiet hours reminder"
+                    -> 1 of 3 subscriber(s): tenant-jerome (offline: queued)
+
+===== broker: restarted after crash =====
+00:32:23 LISTEN     Broker listening on 127.0.0.1:56732  (store: <temp-dir>\broker.db)
+00:32:23 RECOVER    7 durable subscription(s) for 3 client(s), 2 message(s) waiting in queues, 9 message(s) in the log
+00:32:23 ONLINE     subscriber tenant-juan from 127.0.0.1:56745: resumed session, 3 durable subscription(s), 0 message(s) waiting
+00:32:23 ONLINE     subscriber caretaker from 127.0.0.1:56746: resumed session, 2 durable subscription(s), 0 message(s) waiting
+00:32:23 SUBSCRIBE  caretaker -> casa-jaro.maintenance  (already subscribed: durable subscription kept)
+00:32:23 SUBSCRIBE  caretaker -> molo-hub.maintenance  (already subscribed: durable subscription kept)
+00:32:23 ONLINE     subscriber tenant-jerome from 127.0.0.1:56748: resumed session, 2 durable subscription(s), 2 message(s) waiting
+00:32:23 DELIVER    #8 -> tenant-jerome
+00:32:23 DELIVER    #9 -> tenant-jerome
+00:32:23 ACK        #8 <- tenant-jerome (removed from its queue; 1 left)
+00:32:23 ACK        #9 <- tenant-jerome (removed from its queue; 0 left)
+00:32:24 ONLINE     publisher maintenance-desk from 127.0.0.1:56749
+00:32:24 PUBLISH    #10 casa-jaro.maintenance from maintenance-desk "Aircon not cooling in Room 101: technician visit"
+                    -> 2 of 3 subscriber(s): caretaker (online), tenant-juan (online)
+00:32:24 DELIVER    #10 -> tenant-juan
+00:32:24 DELIVER    #10 -> caretaker
+00:32:24 ACK        #10 <- tenant-juan (removed from its queue; 0 left)
+00:32:24 ACK        #10 <- caretaker (removed from its queue; 0 left)
+
+===== broker: restarted with --fault-skip-puback 1 =====
+00:32:25 LISTEN     Broker listening on 127.0.0.1:56732  (store: <temp-dir>\broker.db)
+00:32:25 RECOVER    7 durable subscription(s) for 3 client(s), 0 message(s) waiting in queues, 10 message(s) in the log
+00:32:25 ONLINE     subscriber tenant-juan from 127.0.0.1:56753: resumed session, 3 durable subscription(s), 0 message(s) waiting
+00:32:25 ONLINE     subscriber tenant-jerome from 127.0.0.1:56751: resumed session, 2 durable subscription(s), 0 message(s) waiting
+00:32:25 ONLINE     subscriber caretaker from 127.0.0.1:56752: resumed session, 2 durable subscription(s), 0 message(s) waiting
+00:32:25 SUBSCRIBE  caretaker -> casa-jaro.maintenance  (already subscribed: durable subscription kept)
+00:32:25 SUBSCRIBE  caretaker -> molo-hub.maintenance  (already subscribed: durable subscription kept)
+00:32:26 ONLINE     publisher manager-office-2 from 127.0.0.1:56755
+00:32:26 PUBLISH    #11 casa-jaro.billing from manager-office-2 "Reminder: rent due tomorrow"
+                    -> 1 of 3 subscriber(s): tenant-juan (online)
+00:32:26 FAULT      injected fault: #11 is stored but its PUBACK is being dropped
+00:32:26 DELIVER    #11 -> tenant-juan
+00:32:26 ACK        #11 <- tenant-juan (removed from its queue; 0 left)
+00:32:28 OFFLINE    publisher manager-office-2: connection closed by client
+00:32:28 ONLINE     publisher manager-office-2 from 127.0.0.1:59051
+00:32:28 DUPLICATE  manager-office-2 re-sent manager-office-2-b45a81b9a0824f1d; already stored as #11, not routed again
+00:32:28 OFFLINE    publisher manager-office-2: client disconnected gracefully
+00:32:28 ONLINE     subscriber bad-client from 127.0.0.1:59052: new session
+00:32:28 ERROR      bad-client: BAD_FRAME: frame is not valid UTF-8 JSON (Expecting value: line 1 column 1 (char 0))
+00:32:28 ERROR      bad-client: UNKNOWN_TYPE: unknown message type 'TELEPORT'
+00:32:28 ERROR      bad-client: BAD_REQUEST: invalid topic 'Not A Topic!': use lowercase words separated by dots, e.g. casa-jaro.announcements
+00:32:43 OFFLINE    subscriber bad-client: no heartbeat for 15s. 0 message(s) waiting; new messages will be queued until it reconnects

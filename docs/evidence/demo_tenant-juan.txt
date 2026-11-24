@@ -1,0 +1,52 @@
+===== tenant-juan: run =====
+00:32:13 CONNECTED  as tenant-juan: new session
+00:32:13 SUBSCRIBED casa-jaro.announcements
+00:32:13 SUBSCRIBED casa-jaro.maintenance
+00:32:13 SUBSCRIBED casa-jaro.billing
+00:32:14 LIVE       #1 casa-jaro.announcements from manager-office
+                    Fire safety inspection - Oct 16, 9:00 AM
+                    The city fire safety inspection team will visit. Please keep hallways clear and allow access to your room.
+00:32:15 LIVE       #3 casa-jaro.maintenance from maintenance-desk
+                    Leaking faucet in shared CR: acknowledged
+                    Plumber scheduled for tomorrow morning. Ticket k1, high priority.
+
+===== tenant-juan: restarted after crash (no --topics) =====
+00:32:17 CONNECTED  as tenant-juan: resumed durable session, 3 queued message(s) waiting
+00:32:17            durable subscriptions: casa-jaro.announcements, casa-jaro.billing, casa-jaro.maintenance
+00:32:17 CATCH-UP   #4 casa-jaro.announcements from manager-office  (queued 2s ago)
+                    Scheduled water interruption on Oct 18
+                    Water will be unavailable from 8 AM to 2 PM due to pipe maintenance. Please store water the night before.
+00:32:17 CATCH-UP   #5 casa-jaro.billing from manager-office  (queued 1s ago)
+                    October rent is due on Oct 15
+                    Pay your manager by cash, bank transfer or GCash, then submit your reference number in the DormCare app.
+00:32:17 CATCH-UP   #6 casa-jaro.maintenance from maintenance-desk  (queued 1s ago)
+                    Leaking faucet in shared CR: in progress
+                    Replacement part ordered; the faucet will be fixed when it arrives.
+
+===== tenant-juan: --crash-after 1 =====
+00:32:19 CONNECTED  as tenant-juan: resumed durable session, 0 queued message(s) waiting
+00:32:19            durable subscriptions: casa-jaro.announcements, casa-jaro.billing, casa-jaro.maintenance
+00:32:19 LIVE       #7 casa-jaro.announcements from manager-office
+                    Pest control this Saturday, 8:00 AM
+                    Please keep food sealed and leave cabinets unlocked in the shared kitchen.
+00:32:19 FAULT      --crash-after 1: exiting abruptly before ACKing #7
+
+===== tenant-juan: restarted after crash-before-ACK =====
+00:32:21 CONNECTED  as tenant-juan: resumed durable session, 1 queued message(s) waiting
+00:32:21            durable subscriptions: casa-jaro.announcements, casa-jaro.billing, casa-jaro.maintenance
+00:32:21 DUPLICATE  #7 was already processed: ignored, ACK sent again so the broker stops re-sending
+00:32:22 OFFLINE    connection to the broker was reset
+00:32:22 RECONNECT  trying again in 1s
+00:32:23 CONNECTED  as tenant-juan: resumed durable session, 0 queued message(s) waiting
+00:32:23            durable subscriptions: casa-jaro.announcements, casa-jaro.billing, casa-jaro.maintenance
+00:32:24 LIVE       #10 casa-jaro.maintenance from maintenance-desk
+                    Aircon not cooling in Room 101: technician visit
+                    A technician will check the unit tomorrow at 10:00 AM. Please leave the room accessible.
+00:32:24 OFFLINE    connection to the broker was reset
+00:32:24 RECONNECT  trying again in 1s
+00:32:25 CONNECTED  as tenant-juan: resumed durable session, 0 queued message(s) waiting
+00:32:25            durable subscriptions: casa-jaro.announcements, casa-jaro.billing, casa-jaro.maintenance
+00:32:26 LIVE       #11 casa-jaro.billing from manager-office-2
+                    Reminder: rent due tomorrow
+00:32:43 OFFLINE    connection to the broker was reset
+00:32:43 RECONNECT  trying again in 1s
