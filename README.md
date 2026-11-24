@@ -156,15 +156,30 @@ Each browser tab stays signed in until you log out or close it, so two tabs can 
 |---|---|---|---|
 | Manager | `manager` | `manager123` | Maria Santos, manager of Casa Jaro and Molo Bedspace Hub |
 | Admin | `admin` | `admin123` | DormCare verification admin |
-| Tenant | `juan` | `juan123` | Juan dela Cruz, active tenant at Casa Jaro |
-| Tenant | `ana` | `ana123` | Ana Robles, new renter (not yet in a property) |
+| Tenant | `juan` | `juan123` | Juan dela Cruz, tenant account (no property until approved) |
+| Tenant | `ana` | `ana123` | Ana Robles, tenant account (no property until approved) |
 
 These are demo accounts written in `app.js`, so they are not secret (see section 9).
+
+**The website starts empty.** Only the accounts, the two boarding houses with their rooms, and the invite code
+`CJD-7K2Q` exist; there are no tenants, bills, payments, tickets or messages yet. To begin, a tenant signs in and uses
+**Join a Property** with `CJD-7K2Q`, and the manager approves the request (Tenants → join requests), choosing a room
+and a first rent bill. **Reset Demo Data** in the sidebar returns that browser to this empty start.
 
 - Every `notify()` in the app (the 20 places that create notifications, such as rent reminders, payment decisions, ticket updates and join requests) is **published to the broker**. The **bell** fills from what the broker delivers, and the page ACKs each message after saving it.
 - Each DormCare user is a **durable subscriber**: `web-manager-m1` (`manager.m1`), `web-admin` (`dormcare.admin`), and `web-tenant-<user>`. A tenant subscribes to `tenant.<user>` for personal alerts, which keeps them apart (not secure: see section 9), and to `<property>.announcements`, such as `casa-jaro.announcements`, for notices.
 - **Messages (chat):** tenants and the manager can chat on the **Messages** page. Each tenant's conversation is its own topic (`chat.u-juan`, `chat.u-ana`); the website subscribes the manager to all of them and each tenant only to their own. Every chat message is a PUBLISH. The sender sees *"sending…"* until the broker routes it back, then *"sent through the broker (#n)"*. The other person sees *"via the broker"*, or *"waited at the broker"* if they weren't online. An unread badge appears on Messages.
-- **Try it:** as Manager, post an announcement for Casa Jaro. Log out and sign in as Juan: the notice was waiting for him at the broker and arrives as catch-up. Or open two windows, `http://127.0.0.1:8000/?role=manager` and `http://127.0.0.1:8000/?role=tenant`, sign in as `manager` and `juan`, and update Juan's repair ticket as manager: it arrives live in Juan's window.
+- **Try it:** first make Juan a tenant: sign in as `juan`, **Join a Property** with `CJD-7K2Q`, then sign in as `manager` and approve him. Now, as Manager, post an announcement for Casa Jaro. Log out and sign in as Juan: the notice was waiting for him at the broker and arrives as catch-up. Or open two windows, `http://127.0.0.1:8000/?role=manager` and `http://127.0.0.1:8000/?role=tenant`, sign in as `manager` and `juan`; Juan files a repair request and the manager updates it: each side sees the other's change live.
+- **Records travel with their alerts.** Each browser keeps its own copy of the demo data, so a repair request filed on
+  Juan's phone would otherwise exist only there. Maintenance tickets, payment proofs and join requests, and the
+  manager's answers to them (ticket updates, verified or rejected payments, approvals), travel inside the alert that
+  goes through the broker. The other user's device stores them, live if it is open, or from its queue when that
+  user next signs in. The manager's copy is the official one: the manager's answer replaces the tenant's copy of the
+  ticket, bill or request, while a tenant's payment proof is *added* to the manager's copy of the bill (so a cash
+  payment the manager recorded is never erased), and an approval also carries the room. The receiving page checks
+  every record (known fields only, correct types, references to an existing tenant, property and room) and drops
+  anything else. Everything else (new invite codes, generated bills, utility splits, listings) stays in the browser
+  where it was made: for a tenant joining from another device, use the demo invite code `CJD-7K2Q`.
 - Announcements use the same topics as the scenario, so a command-line subscriber (`python -m pubsub.subscriber --id tenant-juan --topics casa-jaro.announcements`) or the dashboard's phones receive the website's announcements too.
 
 How it works: a browser cannot open raw TCP sockets, so `pubsub/webapp/server.py` speaks the normal protocol on the page's behalf. It publishes with `POST /broker/publish`, delivers each user's messages with server-sent events (`GET /broker/stream`), and forwards the page's `POST /broker/ack`. It serves only `index.html`, `app.js` and `styles.css` from the project folder.
@@ -299,7 +314,7 @@ acknowledged message is lost, misrouted or reordered:
 python -m tests.crash_soak
 ```
 
-An optional browser check (E01–E24) drives the dashboard and the website in headless Microsoft Edge. It needs Node.js 22+
+An optional browser check (E01–E31) drives the dashboard and the website in headless Microsoft Edge. It needs Node.js 22+
 and Edge, and nothing else in the project depends on it:
 ```
 node tests/browser/browser_check.mjs <path to python>
@@ -347,6 +362,11 @@ Brokers and subscribers started by the website or dashboard now stop automatical
   broker per-user access rules.
 - **The shared link is public.** While `scripts\start_online.bat` runs, anyone who has the link reaches the sign-in page,
   and anyone who also knows the demo accounts can read and post, including announcements and chat.
+- **Only some records are shared between devices.** Tickets, payment proofs and join requests travel with their alerts;
+  everything else stays in one browser. A browser that is new, cleared or reset starts from the demo data and does not
+  receive earlier records. A user's own changes do not reach that user's other devices (the manager's phone does not
+  learn that the manager's laptop verified a payment). When one user is open on two devices, a device that was closed
+  misses records the other device already received.
 - **No publisher outbox.** A publish that fails after its retries must be sent again by the user.
 - **The website never unsubscribes.** A tenant who moves keeps receiving the previous property's announcements.
 - **Tested on one machine only**, over the loopback interface.

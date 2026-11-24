@@ -33,11 +33,15 @@ Tick **Show deliveries and ACKs** under the broker log if someone asks to see th
 With the dashboard still running, double-click `scripts\start_website.bat`; DormCare opens at http://127.0.0.1:8000
 and connects to the dashboard's broker (green **Live alerts** pill in the top bar).
 
+The website starts empty. **Before the presentation**, make Juan a tenant once on the presenting laptop: sign in as
+`juan` / `juan123`, **Join a Property** with code `CJD-7K2Q`, log out, sign in as `manager` / `manager123` and approve
+Juan's request (Tenants → join requests) into a Casa Jaro room with a first rent bill. Log out again.
+
 | # | Do | Audience sees | Say |
 |---|---|---|---|
 | 1 | In DormCare, sign in as **Manager** (`manager` / `manager123`): Announcements, pick Casa Jaro, post *"Water tank cleaning Friday"* | The dashboard's **Juan phone** receives it too | "The real app publishes to the same broker; any subscriber of casa-jaro.announcements gets it." |
 | 2 | Click the manager's name, **Log out**, and sign in as **Tenant** Juan (`juan` / `juan123`) | Toast: *"Was waiting at the broker"*; it's in his bell | "Juan's web account is a durable subscriber; the notice waited in his queue." |
-| 3 | *(optional)* Open `http://127.0.0.1:8000/?role=manager` in a second window, sign in as `manager`, update Juan's ticket in Maintenance | Juan's window: *"New alert: Maintenance update…"* | "Live delivery between two separate browser windows." |
+| 3 | *(optional)* As Juan, file a repair request in Maintenance. Open `http://127.0.0.1:8000/?role=manager` in a second window, sign in as `manager`, and update that ticket | Juan's window: *"New alert: Maintenance update…"* | "Live delivery between two separate browser windows." |
 | 4 | *(optional)* Both windows on **Messages**: Juan asks *"Is the Wi-Fi down on the 2nd floor?"*, the manager replies | Bubbles appear live in the other window; each shows *"via the broker (#n)"* / *"sent through the broker (#n)"* | "Two-way chat: each conversation is its own topic, chat.u-juan. The website subscribes the manager to every conversation, each tenant only to theirs. There is no access control yet." |
 
 ## 1. Before the presentation (the day before, and again 10 minutes before)

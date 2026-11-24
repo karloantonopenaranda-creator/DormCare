@@ -140,98 +140,29 @@ function seed() {
     { id: 'b1', prop: 'p2', name: 'Bedspace A', beds: 6, price: 1800, reserved: 0, unavailable: 0 },
     { id: 'b2', prop: 'p2', name: 'Bedspace B', beds: 6, price: 1800, reserved: 0, unavailable: 0 },
   ];
-  const names = ['Juan dela Cruz', 'Andrea Villanueva', 'Mark Gonzaga', 'Patricia Lim', 'Kevin Tan', 'Bea Ledesma', 'Carlo Javellana', 'Nicole Sison',
-    'Paolo Reyes', 'Jessa Mae Divinagracia', 'Rafael Lopez', 'Hannah Uy', 'Miguel Torres', 'Kristine Dela Peña', 'Joshua Arroyo', 'Camille Salazar',
-    'Vince Golez', 'Trisha Panes', 'Ralph Tupas', 'Angela Ong', 'Liza Montinola', 'Earl Dimaano'];
-  const fill = [['r101', 4], ['r102', 4], ['r103', 2], ['r201', 3], ['r202', 3], ['b1', 4], ['b2', 2]];
-  const moveIns = ['2026-06-01', '2026-06-01', '2026-06-15', '2026-07-01', '2026-07-01', '2026-07-15', '2026-08-01', '2026-08-01'];
-  const tenants = [];
-  let n = 0;
-  fill.forEach(([roomId, count]) => {
-    const room = rooms.find((r) => r.id === roomId);
-    for (let k = 0; k < count; k++, n++) {
-      const name = names[n];
-      tenants.push({
-        id: 't' + (n + 1), userId: n === 0 ? 'u-juan' : null, name, prop: room.prop, room: roomId,
-        email: name.toLowerCase().replace(/[^a-z]+/g, '.').replace(/^\.|\.$/g, '') + '@email.com',
-        phone: '09' + String(170000000 + n * 7919113).slice(0, 9),
-        start: [3, 9, 20].includes(n) || n === 21 ? '2026-10-01' : moveIns[n % moveIns.length], status: 'active',
-      });
-    }
-  });
-
-  const pattern = ['Unpaid', 'Paid', 'Paid', 'Paid', 'Submitted for review', 'Paid', 'Paid', 'Paid', 'Paid', 'Partially paid', 'Paid',
-    'Submitted for review', 'Paid', 'Unpaid', 'Paid', 'Unpaid', 'Paid', 'Unpaid', 'Paid', 'Partially paid', 'Paid', 'Paid'];
-  const methods = ['GCash', 'Bank transfer', 'Cash'];
-  const invoices = [];
-  let rc = 1;
-  tenants.forEach((t, i) => {
-    const room = rooms.find((r) => r.id === t.room);
-    const due = t.prop === 'p1' ? '2026-10-15' : '2026-10-10';
-    const st = pattern[i];
-    const amt = room.price;
-    const pays = [];
-    let paid = 0;
-    const m = methods[i % 3];
-    if (st === 'Paid') { paid = amt; pays.push({ id: uid('pay'), amount: amt, method: m, ref: m === 'Cash' ? '' : (m === 'GCash' ? 'GC' : 'BT') + (8800120 + i * 37), date: addDays('2026-10-01', i % 9), verified: true, receipt: 'DC-2610-' + String(rc++).padStart(3, '0') }); }
-    if (st === 'Partially paid') { paid = 1000; pays.push({ id: uid('pay'), amount: 1000, method: 'Cash', ref: '', date: '2026-10-06', verified: true, receipt: 'DC-2610-' + String(rc++).padStart(3, '0') }); }
-    if (st === 'Submitted for review') pays.push({ id: uid('pay'), amount: amt, method: 'GCash', ref: 'GC' + (9100450 + i * 13), date: '2026-10-13', verified: false, proof: 'gcash-screenshot.jpg' });
-    invoices.push({ id: uid('inv'), tenant: t.id, kind: 'rent', label: 'Rent – Oct 2026', period: 'Oct 2026', items: [{ label: `Monthly rent · ${room.name}`, amount: amt }], due, status: st, paid, payments: pays });
-    if (t.prop === 'p1') {
-      const share = 800;
-      const uPaid = st === 'Paid';
-      invoices.push({
-        id: uid('inv'), tenant: t.id, kind: 'utility', label: 'Electricity – Sep 2026', period: 'Sep 2026', utilityBill: 'ub1',
-        items: [{ label: 'Electricity share (per occupant)', amount: share }], basis: '₱12,800 total ÷ 16 occupants (per-occupant split)',
-        due: '2026-10-15', status: uPaid ? 'Paid' : 'Unpaid', paid: uPaid ? share : 0,
-        payments: uPaid ? [{ id: uid('pay'), amount: share, method: m, ref: '', date: addDays('2026-10-02', i % 9), verified: true, receipt: 'DC-2610-' + String(rc++).padStart(3, '0') }] : [],
-      });
-    }
-  });
-
-  const T = (id) => tenants.find((t) => t.id === id);
-  const tickets = [
-    { id: 'k1', tenant: 't1', prop: 'p1', category: 'Plumbing', title: 'Leaking faucet in shared CR', desc: 'The faucet in the 1st floor shared bathroom keeps dripping even when closed tight.', priority: 'High', status: 'In progress', created: '2026-10-11', history: [{ at: '2026-10-11 08:12', text: 'Ticket submitted by tenant' }, { at: '2026-10-11 10:40', text: 'Acknowledged — plumber scheduled' }, { at: '2026-10-13 09:05', text: 'In progress — replacement part ordered' }] },
-    { id: 'k2', tenant: 't6', prop: 'p1', category: 'Electrical', title: 'Flickering light in Room 102', desc: 'Ceiling light flickers at night.', priority: 'Medium', status: 'Acknowledged', created: '2026-10-12', history: [{ at: '2026-10-12 19:30', text: 'Ticket submitted by tenant' }, { at: '2026-10-13 08:00', text: 'Acknowledged by manager' }] },
-    { id: 'k3', tenant: 't12', prop: 'p1', category: 'Internet', title: 'Wi-Fi slow on 2nd floor', desc: 'Connection drops during evening classes.', priority: 'Low', status: 'Submitted', created: '2026-10-13', history: [{ at: '2026-10-13 21:02', text: 'Ticket submitted by tenant' }] },
-    { id: 'k4', tenant: 't18', prop: 'p2', category: 'Pest control', title: 'Ants near the shared sink', desc: 'Lots of ants in the kitchen area.', priority: 'Low', status: 'Submitted', created: '2026-10-14', history: [{ at: '2026-10-14 07:45', text: 'Ticket submitted by tenant' }] },
-    { id: 'k5', tenant: 't3', prop: 'p1', category: 'Electrical', title: 'Aircon not cooling', desc: 'Room 101 aircon blows warm air.', priority: 'High', status: 'Submitted', created: '2026-10-14', history: [{ at: '2026-10-14 09:15', text: 'Ticket submitted by tenant' }] },
-    { id: 'k6', tenant: 't13', prop: 'p1', category: 'Furniture', title: 'Broken cabinet lock', desc: 'Locker lock does not close.', priority: 'Medium', status: 'Resolved', created: '2026-10-05', history: [{ at: '2026-10-05 12:00', text: 'Ticket submitted by tenant' }, { at: '2026-10-07 15:20', text: 'Resolved — lock replaced' }] },
-    { id: 'k7', tenant: 't15', prop: 'p1', category: 'Other', title: 'Door hinge squeaks', desc: '', priority: 'Low', status: 'Closed', created: '2026-09-28', history: [{ at: '2026-09-28 18:00', text: 'Ticket submitted by tenant' }, { at: '2026-09-30 10:00', text: 'Closed — hinge oiled' }] },
-  ];
-
+  // The website starts empty: only accounts, properties with their rooms, invite codes and other managers' public
+  // listings. Tenants, bills, payments, tickets, requests and messages are all created live during the demo.
   return {
-    version: 1,
+    version: 4,  // 2: fixed seed bill ids; 3: fresh start after testing; 4: empty start (no sample activity). Older saved data is replaced
     role: 'manager',
     persona: 'u-juan',
     plan: 'growth',
     manager: { id: 'm1', name: 'Maria Santos', email: 'maria@casajaro.ph' },
     admin: { name: 'DormCare Admin', email: 'verify@dormcare.ph' },
     personas: [
-      { id: 'u-juan', name: 'Juan dela Cruz', email: 'juan.dela.cruz@email.com', note: 'Active tenant · Casa Jaro' },
-      { id: 'u-ana', name: 'Ana Robles', email: 'ana.robles@email.com', note: 'New renter · not yet a member' },
+      { id: 'u-juan', name: 'Juan dela Cruz', email: 'juan.dela.cruz@email.com', note: 'Tenant account' },
+      { id: 'u-ana', name: 'Ana Robles', email: 'ana.robles@email.com', note: 'Tenant account' },
     ],
-    properties, rooms, tenants, invoices, tickets,
-    utilityBills: [{ id: 'ub1', prop: 'p1', type: 'Electricity', period: 'Sep 2026', total: 12800, method: 'occupant', issuedOn: '2026-10-02', due: '2026-10-15', count: 16 }],
-    history: [{ m: 'May', rate: 0.94 }, { m: 'Jun', rate: 0.97 }, { m: 'Jul', rate: 0.88 }, { m: 'Aug', rate: 0.96 }, { m: 'Sep', rate: 0.91 }],
-    joinRequests: [
-      { id: 'j1', name: 'Carla Bautista', email: 'carla.b@email.com', prop: 'p1', via: 'QR code', at: '2026-10-12', note: 'Agreed on a bed in a 4-person room, moving in Oct 20.', status: 'Pending' },
-      { id: 'j2', name: 'Jerome Alvarez', email: 'jerome.a@email.com', prop: 'p2', via: 'Invite link', at: '2026-10-13', note: 'Viewed Bedspace A last Saturday.', status: 'Pending' },
-      { id: 'j3', name: 'Sofia Tan', email: 'sofia.tan@email.com', prop: 'p1', via: 'QR code', at: '2026-10-14', note: 'Prefers 2-person room (Room 203).', status: 'Pending' },
-    ],
+    properties, rooms, tenants: [], invoices: [], tickets: [],
+    utilityBills: [],
+    history: [],
+    joinRequests: [],
     invites: [
-      { id: 'i1', code: 'CJD-7K2Q', prop: 'p1', created: '2026-10-08', expires: '2026-10-22', status: 'Active', uses: 2 },
-      { id: 'i2', code: 'MBH-4RT9', prop: 'p2', created: '2026-10-01', expires: '2026-10-08', status: 'Expired', uses: 1 },
+      { id: 'i1', code: 'CJD-7K2Q', prop: 'p1', created: '2026-10-08', expires: '2026-10-22', status: 'Active', uses: 0 },
+      { id: 'i2', code: 'MBH-4RT9', prop: 'p2', created: '2026-10-01', expires: '2026-10-08', status: 'Expired', uses: 0 },
     ],
-    announcements: [
-      { id: 'a1', prop: 'p1', title: 'Fire safety inspection — Oct 16, 9:00 AM', body: 'The city fire safety inspection team will visit. Please keep hallways clear and allow access to your room.', date: '2026-10-13' },
-      { id: 'a2', prop: 'p1', title: 'Scheduled water interruption on Oct 18', body: 'Water will be unavailable from 8 AM to 2 PM due to pipe maintenance. Please store water the night before.', date: '2026-10-10' },
-      { id: 'a3', prop: 'p2', title: 'Welcome to our new tenants!', body: 'Please review the house rules posted in the kitchen. Quiet hours are from 10 PM to 6 AM.', date: '2026-10-02' },
-    ],
-    inquiries: [
-      { id: 'q1', listing: 'p1', name: 'Rhea Castillo', msg: 'Hi! Is the 2-bed room still available for November? Can I schedule a viewing this weekend?', at: '2026-10-13', status: 'New' },
-      { id: 'q2', listing: 'p1', name: 'Ken Ortega', msg: 'Is electricity included in the monthly rent?', at: '2026-10-11', status: 'Replied', reply: 'Hi Ken! Water is included; electricity is split monthly per occupant.' },
-    ],
+    announcements: [],
+    inquiries: [],
     market: [
       { id: 'm-1', name: 'La Paz Ladies Dormitory', type: 'Dormitory', area: 'La Paz', price: 2800, avail: 3, manager: 'Grace Lacson', hue: 330, deposit: '1 month deposit', amenities: ['Wi-Fi', 'CCTV', 'Laundry area', 'Water included'], rules: ['Female tenants only', 'Curfew at 10:30 PM'] },
       { id: 'm-2', name: 'Business Park Studio Units', type: 'Apartment', area: 'Mandurriao', price: 9500, avail: 2, manager: 'Grace Lacson', hue: 210, deposit: '2 months deposit + 1 advance', amenities: ['Wi-Fi', 'Aircon', 'Private CR', 'Parking'], rules: ['Minimum 6-month lease'] },
@@ -246,35 +177,12 @@ function seed() {
       { id: 'm4', name: 'Edwin Sy', props: 1, tenants: 4, plan: 'starter' },
       { id: 'm5', name: 'Liezl Pama', props: 2, tenants: 17, plan: 'standard' },
     ],
-    reports: [{ id: 'rp1', listing: 'm-4', reason: 'Listed price is lower than what the caretaker quoted on site.', by: 'Registered renter', at: '2026-10-12', status: 'Open' }],
-    billingHistory: [
-      { period: 'Oct 2026', plan: 'Growth', amount: 649, status: 'Paid', note: 'GCash · recorded by DormCare (pilot)' },
-      { period: 'Sep 2026', plan: 'Standard', amount: 449, status: 'Paid', note: 'GCash · recorded by DormCare (pilot)' },
-      { period: 'Aug 2026', plan: 'Standard', amount: 449, status: 'Paid', note: 'Bank transfer · pilot' },
-    ],
-    notifs: [
-      { id: 'n1', role: 'manager', text: `Payment proof submitted by ${T('t5').name} (Rent – Oct 2026)`, at: '2026-10-13 18:20', read: false, to: 'rent' },
-      { id: 'n2', role: 'manager', text: 'New join request from Sofia Tan via QR code', at: '2026-10-14 08:02', read: false, to: 'tenants' },
-      { id: 'n3', role: 'manager', text: "Casa Jaro's Business / Mayor's Permit expires Dec 31 — upload renewal", at: '2026-10-14 07:00', read: false, to: 'verification' },
-      { id: 'n4', role: 'manager', text: 'New inquiry from Rhea Castillo on Casa Jaro Dormitory', at: '2026-10-13 12:44', read: true, to: 'listings' },
-      { id: 'n5', role: 'tenant', userId: 'u-juan', text: 'Your Oct 2026 rent of ₱2,500 is due on Oct 15', at: '2026-10-12 08:00', read: false, to: 'bills' },
-      { id: 'n6', role: 'tenant', userId: 'u-juan', text: 'Maintenance update: "Leaking faucet in shared CR" is now In progress', at: '2026-10-13 09:05', read: false, to: 'tickets' },
-      { id: 'n7', role: 'admin', text: 'Molo Bedspace Hub submitted documents for verification', at: '2026-10-10 15:30', read: false, to: 'queue' },
-      { id: 'n8', role: 'admin', text: 'Listing report on "City Proper Budget Bedspace"', at: '2026-10-12 11:10', read: false, to: 'reports' },
-    ],
-    audit: [
-      { at: '2026-10-12 11:10', actor: 'System', text: 'Listing report rp1 opened for City Proper Budget Bedspace' },
-      { at: '2026-10-10 15:30', actor: 'Maria Santos', text: 'Submitted 4 verification documents for Molo Bedspace Hub' },
-      { at: '2026-10-09 10:02', actor: 'Ramon Villareal', text: 'Submitted 3 of 4 verification documents for Tagbak Boarding House' },
-      { at: '2026-06-12 14:00', actor: 'DormCare Admin', text: 'Approved verification for Casa Jaro Dormitory' },
-    ],
+    reports: [],
+    billingHistory: [],
+    notifs: [],
+    audit: [],
     // Tenant <-> manager conversations, one thread per tenant account (key = persona id).
-    chats: {
-      'u-juan': [
-        { id: 'c-seed1', thread: 'u-juan', from: 'tenant', name: 'Juan dela Cruz', text: 'Good evening po! Is the plumber still coming tomorrow for the CR faucet?', at: '2026-10-13 18:02', local: true },
-        { id: 'c-seed2', thread: 'u-juan', from: 'manager', name: 'Maria Santos', text: 'Yes, he arrives at 9 AM. Please leave the shared CR unlocked.', at: '2026-10-13 18:10', local: true },
-      ],
-    },
+    chats: {},
     remindersSent: null,
     ui: {},
   };
@@ -284,7 +192,7 @@ function seed() {
 function load() {
   try {
     const s = JSON.parse(localStorage.getItem(STORE_KEY));
-    return s && s.version === 1 ? s : null;
+    return s && s.version === 4 ? s : null;
   } catch { return null; }
 }
 function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); } catch { /* storage unavailable: demo still works in-memory */ } }
@@ -370,8 +278,10 @@ window.addEventListener('storage', (e) => {
 });
 
 function audit(text, actor) { S.audit.unshift({ at: nowStamp(), actor: actor || actorName(), text }); }
-function notify(role, text, to, userId) {
-  if (Broker.available) { Broker.notify(role, text, to, userId); return; }  // live alerts: published to the broker
+// `records` (optional): the records this alert is about, e.g. { tickets: [k] }. Through the broker they travel with
+// the alert, so the other user's device gets the ticket, bill or join request itself, not only the alert.
+function notify(role, text, to, userId, records) {
+  if (Broker.available) { Broker.notify(role, text, to, userId, records); return; }  // live alerts: published to the broker
   S.notifs.unshift({ id: uid('n'), role, userId: userId || null, text, at: nowStamp(), read: false, to });
 }
 function actorName() { return S.role === 'manager' ? S.manager.name : S.role === 'admin' ? S.admin.name : persona().name; }
@@ -604,7 +514,10 @@ function vDashboard() {
       ${nextDue ? `<h4>Rent due ${fmtShort(nextDue)}</h4><p>${dueSoon.length} tenant${dueSoon.length === 1 ? '' : 's'} still unpaid · ${peso(sum(dueSoon, invBalance))}</p>
         <button class="btn primary" data-act="send-reminders" ${sentToday ? 'disabled' : ''}>${icon(sentToday ? 'check' : 'send')}${sentToday ? 'Reminders sent today' : 'Send Reminders'}</button>`
         : `<h4>No upcoming dues</h4><p>All current bills are settled or under review.</p><button class="btn primary" data-act="nav" data-to="rent">${icon('wallet')}Open Rent</button>`}
-      <div class="li mt"><span class="sq-ic">${icon('calendar')}</span><div class="body"><b>Fire safety inspection</b><small>Oct 16 · 9:00 AM · Casa Jaro</small></div></div>
+      ${(() => {  // the latest announcement for this manager's properties, if there is one
+        const a = S.announcements.find((x) => myProps().some((p) => p.id === x.prop));
+        return a ? `<div class="li mt"><span class="sq-ic">${icon('megaphone')}</span><div class="body"><b>${esc(a.title)}</b><small>${fmtDate(a.date)} · ${esc(propById(a.prop)?.name || '')}</small></div></div>` : '';
+      })()}
     </div>
 
     <div class="card c-3"><div class="card-head"><h3>Join Requests</h3><button class="btn xs outline" data-act="new-invite">${icon('plus')}Invite</button></div>
@@ -1222,12 +1135,12 @@ const A = {
   help: () => openModal('Demo guide', `<p>DormCare MVP is a clickable prototype with demo data stored in this browser. To switch role, click your name (top right), log out and sign in with another demo account: <span class="code">manager</span> / <span class="code">manager123</span>, <span class="code">admin</span> / <span class="code">admin123</span>, tenants <span class="code">juan</span> / <span class="code">juan123</span> and <span class="code">ana</span> / <span class="code">ana123</span>.</p>
     <div class="list">
       <div class="li" style="align-items:flex-start"><span class="sq-ic">${icon('building')}</span><div class="body"><b>Manager</b><small style="white-space:normal">Approve join requests (capacity rules apply), review GCash proofs, split a utility bill, move tickets through statuses, post announcements, upload verification documents, publish listings.</small></div></div>
-      <div class="li" style="align-items:flex-start"><span class="sq-ic">${icon('home')}</span><div class="body"><b>Tenant</b><small style="white-space:normal">As Juan: submit payment proof, file a repair request. Sign in as Ana and join with code <span class="code">CJD-7K2Q</span>, then approve her as Manager.</small></div></div>
+      <div class="li" style="align-items:flex-start"><span class="sq-ic">${icon('home')}</span><div class="body"><b>Tenant</b><small style="white-space:normal">The demo starts empty, so Juan and Ana have no property yet. Each signs in and uses Join a Property with code <span class="code">CJD-7K2Q</span>; approve them as Manager (with a first rent bill). Then they can submit payment proof, file repair requests and receive announcements.</small></div></div>
       <div class="li" style="align-items:flex-start"><span class="sq-ic">${icon('shield')}</span><div class="body"><b>Admin</b><small style="white-space:normal">Approve Molo Bedspace Hub — then publish it from the Manager's Listings page and find it on Explore Rentals.</small></div></div>
     </div>${note('No real payments, documents or messages are processed. Use “Reset Demo Data” to start over.')}`),
   'broker-info': () => Broker.details(),
   'chat-open': (d) => { S.ui.chatWith = d.id; commit(); },
-  reset: () => openModal('Reset demo data?', `<p>This restores the original sample properties, tenants and bills in this browser.</p><div class="modal-foot"><button class="btn ghost" data-act="close-modal">Cancel</button><button class="btn danger" data-act="do-reset">Reset</button></div>`),
+  reset: () => openModal('Reset demo data?', `<p>This goes back to the empty start in this browser: tenants, bills, payments, tickets and messages are removed; the properties, rooms and invite codes stay.</p><div class="modal-foot"><button class="btn ghost" data-act="close-modal">Cancel</button><button class="btn danger" data-act="do-reset">Reset</button></div>`),
   'do-reset': () => { const role = S.role; S = seed(); S.epoch = Date.now(); S.role = role; S.ui ={ tenantTab: 'directory', rentTab: 'all', ex: { q: '', type: '', area: '', max: '', amen: '' } }; closeModal(); commit(); toast('Demo data reset'); },
 
   /* --- properties --- */
@@ -1268,7 +1181,7 @@ const A = {
     const j = S.joinRequests.find((x) => x.id === d.id);
     j.status = 'Rejected';
     audit(`Rejected join request from ${j.name} (${propById(j.prop).name})`);
-    if (j.userId) notify('tenant', `Your request to join ${propById(j.prop).name} was not approved`, 'join', j.userId);
+    if (j.userId) notify('tenant', `Your request to join ${propById(j.prop).name} was not approved`, 'join', j.userId, { joinRequests: [j] });
     commit(); toast(`Request from ${j.name} rejected`);
   },
   'new-invite': () => openModal('New invite', `<form class="stack" data-form="invite"><label class="field"><span>Property</span><select class="input" name="prop">${propOptions('p1')}</select></label>
@@ -1313,13 +1226,13 @@ const A = {
       i.paid = round2((i.paid || 0) + p.amount);
       i.status = invBalance(i) <= 0 ? 'Paid' : 'Partially paid';
       audit(`Verified ${p.method} payment ${p.ref} of ${peso(p.amount)} from ${t.name}`);
-      notify('tenant', `Payment of ${peso(p.amount)} for ${i.label} was verified — receipt ${p.receipt}`, 'bills', t.userId);
+      notify('tenant', `Payment of ${peso(p.amount)} for ${i.label} was verified — receipt ${p.receipt}`, 'bills', t.userId, { invoices: [i] });
       toast('Payment verified — receipt issued');
     } else {
       p.rejected = true;
       i.status = (i.paid || 0) > 0 ? 'Partially paid' : 'Unpaid';
       audit(`Rejected payment proof ${p.ref} from ${t.name}`);
-      notify('tenant', `Your payment proof for ${i.label} could not be verified. Please contact your manager.`, 'bills', t.userId);
+      notify('tenant', `Your payment proof for ${i.label} could not be verified. Please contact your manager.`, 'bills', t.userId, { invoices: [i] });
       toast('Proof rejected — tenant notified');
     }
     closeModal(); commit();
@@ -1533,9 +1446,11 @@ const F = {
     const t = { id: uid('t'), userId: j.userId || null, name: j.name, email: j.email, phone: '—', prop: j.prop, room: r.id, start: v.start, status: 'active' };
     S.tenants.push(t);
     j.status = 'Approved';
-    if (v.bill) S.invoices.push({ id: uid('inv'), tenant: t.id, kind: 'rent', label: 'Rent – first month', period: 'Oct 2026', items: [{ label: `Monthly rent · ${r.name}`, amount: r.price }], due: addDays(v.start, 7), status: 'Unpaid', paid: 0, payments: [] });
+    const bill = v.bill ? { id: uid('inv'), tenant: t.id, kind: 'rent', label: 'Rent – first month', period: 'Oct 2026', items: [{ label: `Monthly rent · ${r.name}`, amount: r.price }], due: addDays(v.start, 7), status: 'Unpaid', paid: 0, payments: [] } : null;
+    if (bill) S.invoices.push(bill);
     audit(`Approved ${j.name} into ${propById(j.prop).name}, ${r.name}`);
-    if (j.userId) notify('tenant', `Welcome! Your request to join ${propById(j.prop).name} was approved — ${r.name}`, 'mydorm', j.userId);
+    if (j.userId) notify('tenant', `Welcome! Your request to join ${propById(j.prop).name} was approved — ${r.name}`, 'mydorm', j.userId,
+      { rooms: [r], joinRequests: [j], tenants: [t], ...(bill ? { invoices: [bill] } : {}) });  // the room may be new
     closeModal(); commit(); toast(`${j.name} approved and assigned to ${r.name}`);
   },
   invite: (v) => {
@@ -1554,7 +1469,7 @@ const F = {
     i.status = invBalance(i) <= 0 ? 'Paid' : 'Partially paid';
     const t = tenantById(i.tenant);
     audit(`Recorded ${v.method} payment of ${peso(amt)} from ${t.name} (${i.label})`);
-    notify('tenant', `Payment of ${peso(amt)} for ${i.label} recorded — receipt ${receipt}`, 'bills', t.userId);
+    notify('tenant', `Payment of ${peso(amt)} for ${i.label} recorded — receipt ${receipt}`, 'bills', t.userId, { invoices: [i] });
     closeModal(); commit(); toast(`Payment recorded — receipt ${receipt}`);
   },
   'issue-util': () => {
@@ -1577,7 +1492,7 @@ const F = {
     if (!changed && !v.note) return toast('Nothing to update');
     k.status = v.status;
     k.history.push({ at: nowStamp(), text: `${changed ? v.status : 'Update'}${v.note ? ' — ' + v.note : ''}` });
-    notify('tenant', `Maintenance update: "${k.title}" is now ${k.status}`, 'tickets', tenantById(k.tenant).userId);
+    notify('tenant', `Maintenance update: "${k.title}" is now ${k.status}`, 'tickets', tenantById(k.tenant).userId, { tickets: [k] });
     closeModal(); commit(); toast('Ticket updated — tenant notified');
   },
   ticket: (v, f) => {
@@ -1585,16 +1500,18 @@ const F = {
     const photo = f.querySelector('[name=photo]').files[0];
     const k = { id: uid('k'), tenant: t.id, prop: t.prop, category: v.category, title: v.title, desc: v.desc, priority: v.priority, status: 'Submitted', created: TODAY, photo: photo ? photo.name : '', history: [{ at: nowStamp(), text: 'Ticket submitted by tenant' }] };
     S.tickets.unshift(k);
-    notify('manager', `New ${v.priority.toLowerCase()}-priority ticket from ${t.name}: ${v.title}`, 'maintenance');
+    notify('manager', `New ${v.priority.toLowerCase()}-priority ticket from ${t.name}: ${v.title}`, 'maintenance', null, { tickets: [k] });
     closeModal(); commit(); toast('Request submitted — your manager has been notified');
   },
   pay: (v, f) => {
     const i = S.invoices.find((x) => x.id === v.inv);
     const t = tenantById(i.tenant);
     const proof = f.querySelector('[name=proof]').files[0];
-    i.payments.push({ id: uid('pay'), amount: Number(v.amount), method: v.method, ref: v.ref, date: v.date, verified: false, proof: proof ? proof.name : 'no-file-attached' });
+    const payment = { id: uid('pay'), amount: Number(v.amount), method: v.method, ref: v.ref, date: v.date, verified: false, proof: proof ? proof.name : 'no-file-attached' };
+    i.payments.push(payment);
     i.status = 'Submitted for review';
-    notify('manager', `Payment proof submitted by ${t.name} (${i.label})`, 'rent');
+    // Only the new proof travels, not this device's copy of the bill (see RECORD_RULES.payments).
+    notify('manager', `Payment proof submitted by ${t.name} (${i.label})`, 'rent', null, { payments: [{ invoice: i.id, ...payment }] });
     closeModal(); commit(); toast('Submitted — waiting for manager verification');
   },
   announce: (v) => {
@@ -1621,9 +1538,10 @@ const F = {
     if (t && t.prop === inv.prop) return toast('You are already a member of this property');
     if (S.joinRequests.some((j) => j.userId === S.persona && j.prop === inv.prop && j.status === 'Pending')) return toast('You already have a pending request');
     const me = persona();
-    S.joinRequests.unshift({ id: uid('j'), userId: me.id, name: me.name, email: me.email, prop: inv.prop, via: 'Invite code', at: TODAY, note: v.note, status: 'Pending' });
+    const j = { id: uid('j'), userId: me.id, name: me.name, email: me.email, prop: inv.prop, via: 'Invite code', at: TODAY, note: v.note || '', status: 'Pending' };
+    S.joinRequests.unshift(j);
     inv.uses++;
-    notify('manager', `New join request from ${me.name} via invite code`, 'tenants');
+    notify('manager', `New join request from ${me.name} via invite code`, 'tenants', null, { joinRequests: [j] });
     commit(); toast('Request sent — your manager will review it');
   },
   inquire: (v, f) => {
@@ -1669,6 +1587,96 @@ async function brokerPost(path, body) {
   const data = await res.json().catch(() => ({}));
   if (!res.ok || data.ok === false) throw new Error(data.error || `HTTP ${res.status}`);
   return data;
+}
+
+/* Records that travel with alerts, so another device gets the ticket, bill or join request itself.
+   Anyone can publish anything to the broker (README section 9), so an incoming record is checked before it is
+   stored: only these collections, only these fields, each with the right type, plain ids, and references to a
+   tenant, property or room that exists on this device. A record that fails is dropped; its alert is still shown.
+   Field types: id = plain id, s = text, n = number, b = true/false, ? = may be missing (or null for ids). */
+const RECORD_RULES = {
+  rooms: { fields: { id: 'id', prop: 'id', name: 's', beds: 'n', price: 'n', reserved: 'n?', unavailable: 'n?' },
+    refs: (r) => propById(r.prop) },
+  tenants: { fields: { id: 'id', userId: 'id?', name: 's', email: 's?', phone: 's?', prop: 'id', room: 'id', start: 's?', status: 's' },
+    refs: (r) => propById(r.prop) && roomById(r.room) },
+  joinRequests: { fields: { id: 'id', userId: 'id?', name: 's', email: 's?', prop: 'id', via: 's?', at: 's?', note: 's?', status: 's' },
+    refs: (r) => propById(r.prop) },
+  invoices: { fields: { id: 'id', tenant: 'id', kind: 's', label: 's', period: 's?', items: 'items', due: 's?', status: 's',
+    paid: 'n?', payments: 'pays', utilityBill: 'id?', basis: 's?' },
+    refs: (r) => tenantById(r.tenant) },
+  // A tenant's new payment proof. It is ADDED to this device's copy of the bill, never replacing the bill: the
+  // manager's copy is the official one and may already hold newer payments (a cash payment, for example).
+  payments: { fields: { invoice: 'id', id: 'id', amount: 'n', method: 's', ref: 's?', date: 's?', proof: 's?' },
+    refs: (r) => S.invoices.some((i) => i.id === r.invoice) },
+  tickets: { fields: { id: 'id', tenant: 'id', prop: 'id', category: 's', title: 's', desc: 's?', priority: 's', status: 's',
+    created: 's', photo: 's?', history: 'log' },
+    refs: (r) => tenantById(r.tenant) && propById(r.prop) },
+};
+const RECORD_PARTS = {  // the shapes inside a record's lists
+  log: { max: 100, fields: { at: 's', text: 's' } },
+  items: { max: 50, fields: { label: 's', amount: 'n' } },
+  pays: { max: 100, fields: { id: 'id', amount: 'n', method: 's', ref: 's?', date: 's?', verified: 'b?', rejected: 'b?', receipt: 's?', proof: 's?' } },
+};
+// A clean copy of `obj` with only the listed fields, or null if any field has the wrong type.
+function cleanRecord(obj, fields) {
+  if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return null;
+  const out = {};
+  for (const [name, type] of Object.entries(fields)) {
+    const v = obj[name];
+    const optional = type.endsWith('?');
+    if (v === undefined || (v === null && type === 'id?')) {
+      if (!optional) return null;
+      if (v === null) out[name] = null;
+      continue;
+    }
+    const base = optional ? type.slice(0, -1) : type;
+    if (base === 'id' && !(typeof v === 'string' && /^[\w-]{1,64}$/.test(v))) return null;
+    if (base === 's' && !(typeof v === 'string' && v.length <= 2000)) return null;
+    if (base === 'n' && !(typeof v === 'number' && Number.isFinite(v))) return null;
+    if (base === 'b' && typeof v !== 'boolean') return null;
+    if (RECORD_PARTS[base]) {
+      const part = RECORD_PARTS[base];
+      if (!Array.isArray(v) || v.length > part.max) return null;
+      const list = v.map((x) => cleanRecord(x, part.fields));
+      if (list.includes(null)) return null;
+      out[name] = list;
+      continue;
+    }
+    out[name] = v;
+  }
+  return out;
+}
+// Store the valid records (replacing any with the same id; payment proofs are added to their bill); returns how many
+// were stored. Never throws. Rooms and tenants come first, because the records after them refer to them.
+function applyRecords(records) {
+  let stored = 0;
+  for (const collection of ['rooms', 'tenants', 'joinRequests', 'invoices', 'payments', 'tickets']) {
+    const list = records?.[collection];
+    if (!Array.isArray(list)) continue;
+    for (const raw of list.slice(0, 20)) {
+      try {
+        const rule = RECORD_RULES[collection];
+        const r = cleanRecord(raw, rule.fields);
+        if (!r || !rule.refs(r)) continue;
+        if (collection === 'payments') {
+          const bill = S.invoices.find((x) => x.id === r.invoice);
+          if (!bill.payments.some((x) => x.id === r.id)) {
+            const { invoice, ...proof } = r;
+            bill.payments.push({ ...proof, verified: false });  // only the manager verifies
+            if (invBalance(bill) > 0) bill.status = 'Submitted for review';
+          }
+          stored += 1;
+          continue;
+        }
+        const i = S[collection].findIndex((x) => x.id === r.id);
+        if (i >= 0) S[collection][i] = r;
+        else if (collection === 'tickets' || collection === 'joinRequests') S[collection].unshift(r);  // newest first
+        else S[collection].push(r);
+        stored += 1;
+      } catch { /* a bad record is skipped; the alert is still shown */ }
+    }
+  }
+  return stored;
 }
 
 const Broker = {
@@ -1786,6 +1794,7 @@ const Broker = {
       save(); render();
       if (r.incoming && !r.viewing) this.announce(`Message from ${r.name}: ${r.text}`, r.queued);
     } else if (isNew) {
+      if (p.kind === 'notification' && p.records && typeof p.records === 'object') applyRecords(p.records);
       if (isAnnouncement && !S.announcements.some((a) => a.id === p.id)) {
         S.announcements.unshift({ id: p.id, prop: p.prop, title: p.title, body: p.body || '', date: p.date || TODAY });
       }
@@ -1811,10 +1820,11 @@ const Broker = {
   },
 
   publish(topic, payload) { return brokerPost('/broker/publish', { role: S.role, topic, payload }); },
-  notify(role, text, to, userId) {
+  notify(role, text, to, userId, records) {
     const topic = this.topicFor(role, userId);
     if (!topic) return;  // a tenant without an app account: nobody could receive it
-    this.publish(topic, { kind: 'notification', title: text, text, to: to || null, role, userId: userId || null, from: actorName() })
+    this.publish(topic, { kind: 'notification', title: text, text, to: to || null, role, userId: userId || null, from: actorName(),
+      ...(records ? { records } : {}) })
       .catch(() => {  // broker unreachable: keep the alert locally so nothing is lost in the prototype
         S.notifs.unshift({ id: uid('n'), role, userId: userId || null, text, at: nowStamp(), read: false, to });
         save(); render();
