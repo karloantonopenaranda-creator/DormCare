@@ -106,7 +106,19 @@ try {
   await reset();
   children.push(run(py, ['-m', 'pubsub.webapp', '--port', W, '--broker-port', B, '--no-broker', '--no-browser']));
   await sleep(3000);
+  // The website opens on its sign-in page; ?role= only picks which role's tab is shown first.
+  const submitLogin = (w, user, pass) => w.ev(`(() => { const f = document.querySelector('form[data-form="login"]');
+    f.querySelector('[name=username]').value = ${JSON.stringify(user)};
+    f.querySelector('[name=password]').value = ${JSON.stringify(pass)};
+    f.requestSubmit(); })()`);
+  const signIn = async (w, user, pass) => {
+    await w.until(`!!document.querySelector('form[data-form="login"]')`);
+    await submitLogin(w, user, pass);
+    return w.until(`!document.querySelector('form[data-form="login"]') && !document.querySelector('#shell').hidden`);
+  };
+  const signedOut = `!!document.querySelector('form[data-form="login"]') && document.querySelector('#shell').hidden && !Broker.source`;
   const m = await tab(`http://127.0.0.1:${W}/?role=manager`);
+  await signIn(m, 'manager', 'manager123');
   await sleep(4000);
 
   const announceThenViewAsJuan = async (title) => {
@@ -124,7 +136,7 @@ try {
 
   await m.ev(`S.role = 'manager'; commit()`); await sleep(3000);
   const t = await tab(`http://127.0.0.1:${W}/?role=tenant`);
-  await t.ev(`S.role = 'tenant'; S.persona = 'u-juan'; commit()`); await sleep(4000);
+  await signIn(t, 'juan', 'juan123'); await sleep(4000);
   const hasAlert = `S.notifs.some(n => n.role === 'tenant' && n.text.includes('Two window notice'))`;
   await m.ev(`F.announce({ prop: 'p1', title: 'Two window notice', body: 'x' })`);
   ok('E14 website: live delivery between two windows', await t.until(hasAlert));
@@ -150,7 +162,23 @@ try {
   await m.ev(`go('announcements')`); await sleep(2000);
   ok('E18 website: broker payload cannot inject HTML', await m.ev(`!window.pwned && !document.querySelector('img[src="x"]')`) === true);
 
-  const errors = [...d.errors, ...m.errors, ...t.errors];
+  const l = await tab(`http://127.0.0.1:${W}/?role=admin`);
+  ok('E20 website: a visitor who has not signed in sees only the sign-in page', await l.until(signedOut));
+  await submitLogin(l, 'admin', 'wrong-password'); await sleep(500);
+  const wrongPassword = await l.until(`document.querySelector('.login-error')?.textContent.trim().length > 0`) && await l.ev(signedOut);
+  await submitLogin(l, 'juan', 'juan123'); await sleep(500);  // a tenant account on the Admin tab
+  ok('E21 website: a wrong password, or another role\'s account, is refused', wrongPassword === true && await l.ev(signedOut) === true);
+  ok('E22 website: admin signs in to the admin view, with no way to switch role',
+    await signIn(l, 'admin', 'admin123') && await l.ev(`S.role === 'admin' && !document.querySelector('.role-switch') && !document.querySelector('[data-act="role"]')`) === true);
+  await l.ev(`document.querySelector('[data-act="toggle-profile"]').click()`); await sleep(300);
+  await l.ev(`document.querySelector('[data-act="logout"]').click()`);
+  ok('E23 website: signing out returns to the sign-in page and closes the live connection', await l.until(signedOut));
+  await l.ev(`document.querySelector('[data-act="login-role"][data-role="tenant"]').click()`); await sleep(300);
+  ok('E24 website: each tenant signs in as themselves, and other windows keep their own user',
+    await signIn(l, 'ana', 'ana123') && await l.ev(`S.role === 'tenant' && S.persona === 'u-ana' && Broker.current().client === 'web-tenant-u-ana'`) === true
+    && await t.ev(`S.role === 'tenant' && S.persona === 'u-juan'`) === true);
+
+  const errors = [...d.errors, ...m.errors, ...t.errors, ...l.errors];
   ok('E19 no uncaught page errors', errors.length === 0);
   errors.forEach((e) => console.log(`       ${e}`));
 } catch (e) {

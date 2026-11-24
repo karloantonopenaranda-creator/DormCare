@@ -85,7 +85,7 @@ There are no third-party packages, so [`requirements.txt`](requirements.txt) lis
    ```
    python -m unittest discover -s tests -t . -v
    ```
-   Expected result: `Ran 95 tests ... OK` on Windows, `OK (skipped=9)` on Linux (the skipped tests are for Windows
+   Expected result: `Ran 105 tests ... OK` on Windows, `OK (skipped=9)` on Linux (the skipped tests are for Windows
    scripts and processes). On Windows you can run `scripts\run_tests.bat` instead.
 
 Nothing else needs installing or configuring. The broker creates `data\broker.db` on first start.
@@ -148,18 +148,59 @@ python -m pubsub.webapp             (or double-click scripts\start_website.bat)
 ```
 The DormCare web app opens at <http://127.0.0.1:8000>. It uses the broker already running on port 5555, or starts one. A green **Live alerts** pill in the top bar shows the connection; click it to see every user's subscriber id and topics.
 
+**Sign in** with one of the demo accounts. Pick the role's tab on the sign-in page (`?role=manager`, `?role=tenant`
+or `?role=admin` in the address opens that tab first). To switch user, click your name (top right) and **Log out**.
+Each browser tab stays signed in until you log out or close it, so two tabs can be two different users.
+
+| Role | Username | Password | Signs in as |
+|---|---|---|---|
+| Manager | `manager` | `manager123` | Maria Santos, manager of Casa Jaro and Molo Bedspace Hub |
+| Admin | `admin` | `admin123` | DormCare verification admin |
+| Tenant | `juan` | `juan123` | Juan dela Cruz, active tenant at Casa Jaro |
+| Tenant | `ana` | `ana123` | Ana Robles, new renter (not yet in a property) |
+
+These are demo accounts written in `app.js`, so they are not secret (see section 9).
+
 - Every `notify()` in the app (the 20 places that create notifications, such as rent reminders, payment decisions, ticket updates and join requests) is **published to the broker**. The **bell** fills from what the broker delivers, and the page ACKs each message after saving it.
 - Each DormCare user is a **durable subscriber**: `web-manager-m1` (`manager.m1`), `web-admin` (`dormcare.admin`), and `web-tenant-<user>`. A tenant subscribes to `tenant.<user>` for personal alerts, which keeps them apart (not secure: see section 9), and to `<property>.announcements`, such as `casa-jaro.announcements`, for notices.
 - **Messages (chat):** tenants and the manager can chat on the **Messages** page. Each tenant's conversation is its own topic (`chat.u-juan`, `chat.u-ana`); the website subscribes the manager to all of them and each tenant only to their own. Every chat message is a PUBLISH. The sender sees *"sending…"* until the broker routes it back, then *"sent through the broker (#n)"*. The other person sees *"via the broker"*, or *"waited at the broker"* if they weren't online. An unread badge appears on Messages.
-- **Try it:** as Manager, post an announcement for Casa Jaro. Switch to Tenant (Juan): the notice was waiting for him at the broker and arrives as catch-up. Or open two windows, `http://127.0.0.1:8000/?role=manager` and `http://127.0.0.1:8000/?role=tenant`, and update Juan's repair ticket as manager: it arrives live in Juan's window.
+- **Try it:** as Manager, post an announcement for Casa Jaro. Log out and sign in as Juan: the notice was waiting for him at the broker and arrives as catch-up. Or open two windows, `http://127.0.0.1:8000/?role=manager` and `http://127.0.0.1:8000/?role=tenant`, sign in as `manager` and `juan`, and update Juan's repair ticket as manager: it arrives live in Juan's window.
 - Announcements use the same topics as the scenario, so a command-line subscriber (`python -m pubsub.subscriber --id tenant-juan --topics casa-jaro.announcements`) or the dashboard's phones receive the website's announcements too.
 
 How it works: a browser cannot open raw TCP sockets, so `pubsub/webapp/server.py` speaks the normal protocol on the page's behalf. It publishes with `POST /broker/publish`, delivers each user's messages with server-sent events (`GET /broker/stream`), and forwards the page's `POST /broker/ack`. It serves only `index.html`, `app.js` and `styles.css` from the project folder.
+
+### Share a link to the website (any device, no setup)
+```
+scripts\start_online.bat            (or: python scripts/start_online.py)
+```
+This puts the DormCare website on a public ngrok link, such as `https://<your-name>.ngrok-free.app`. Any phone or
+laptop can open it, on any network (the same Wi-Fi, campus Wi-Fi or mobile data), with nothing to install. Live
+alerts and chat work through it. The script prints the link and copies it to the clipboard. It uses the website
+already running on port 8000, or starts it (and the broker).
+
+- **One-time setup on the PC that runs the website:**
+  1. Install ngrok from the Microsoft Store: `winget install --id 9MVS1J51GMK6 --source msstore`. (The `Ngrok.Ngrok`
+     winget package is an old version that ngrok no longer accepts; if you already have it, run `ngrok update`.)
+  2. Create a free account at <https://dashboard.ngrok.com/signup>.
+  3. Copy your authtoken from <https://dashboard.ngrok.com/get-started/your-authtoken> and, in a new window, run
+     `ngrok config add-authtoken <your authtoken>`.
+- **The link is fixed.** A free account has one permanent address, so the link stays the same every time and can go
+  on a slide or a QR code. It works only while this PC and the script are running.
+- **Visitors see an ngrok notice page once** and tap **Visit**; it then stays away on that device for 7 days.
+- **How it works:** ngrok makes an outgoing connection from this PC to the ngrok service, which forwards requests for
+  the link to the website. No firewall rule, Wi-Fi setting or IP address is needed.
+- **Only the website goes through the link.** Command-line subscribers and publishers on other machines still need the
+  broker started with `--host 0.0.0.0` on the same network (see Options below).
+- **Free-plan limits:** 1 GB of data and 20,000 requests a month, plenty for demos.
+- **Visitors must sign in** with a demo account, but those accounts are written in `app.js`, so the sign-in only keeps
+  casual visitors out. Stop the script with Ctrl+C after the demo.
+- *Why not Cloudflare's free quick tunnels?* They do not support server-sent events, so live alerts never arrive.
 
 ### Helper scripts (Windows)
 | Script | Purpose |
 |---|---|
 | `scripts\start_website.bat` | Open the DormCare web app running on the broker |
+| `scripts\start_online.bat` | Share the DormCare website on your public ngrok link (needs ngrok) |
 | `scripts\start_dashboard.bat` | Open the web dashboard in your browser |
 | `scripts\start_demo.bat` | Open all 6 demo windows |
 | `scripts\status.bat` | Print every subscriber's queue |
@@ -258,7 +299,7 @@ acknowledged message is lost, misrouted or reordered:
 python -m tests.crash_soak
 ```
 
-An optional browser check (E01–E19) drives the dashboard and the website in headless Microsoft Edge. It needs Node.js 22+
+An optional browser check (E01–E24) drives the dashboard and the website in headless Microsoft Edge. It needs Node.js 22+
 and Edge, and nothing else in the project depends on it:
 ```
 node tests/browser/browser_check.mjs <path to python>
@@ -300,6 +341,12 @@ Brokers and subscribers started by the website or dashboard now stop automatical
 - **One central broker.** It is a single point of failure for availability. Its state survives a crash, but no messages flow while it is down. Replicated or federated brokers (§6.3 implementation issues) are future work.
 - **No authentication or encryption.** Any client can claim any id or subscribe to any topic, so the website's per-tenant and chat topics separate messages but do **not** protect them. Real privacy would need broker-side access control; see the design document.
 - **The dashboard and website servers are for local use.** They accept requests from any web origin.
+- **The website's sign-in is for the demo only.** The accounts and passwords are written in `app.js` and checked in the
+  browser, and the gateway's `/broker/...` requests do not check them. Anyone who reads the code, or calls the gateway
+  directly, can still read and post as any user. Real sign-in would check a password hash on the server and give the
+  broker per-user access rules.
+- **The shared link is public.** While `scripts\start_online.bat` runs, anyone who has the link reaches the sign-in page,
+  and anyone who also knows the demo accounts can read and post, including announcements and chat.
 - **No publisher outbox.** A publish that fails after its retries must be sent again by the user.
 - **The website never unsubscribes.** A tenant who moves keeps receiving the previous property's announcements.
 - **Tested on one machine only**, over the loopback interface.
@@ -317,13 +364,13 @@ Brokers and subscribers started by the website or dashboard now stop automatical
 - Microsoft documentation: [Using SO_REUSEADDR and SO_EXCLUSIVEADDRUSE](https://learn.microsoft.com/windows/win32/winsock/using-so-reuseaddr-and-so-exclusiveaddruse)
 
 ### Use of AI tools
-This project was produced with **extensive use of AI**: Anthropic's Claude, through Claude Code, on 21–23 November 2026.
+This project was produced with **extensive use of AI**: Anthropic's Claude, through Claude Code, on 21–24 November 2026.
 Most of what is submitted was generated by it, at the group's request.
 
 | Item | Produced by |
 |---|---|
 | Python broker, publisher, subscriber, dashboard and website gateway (`pubsub/`) | Claude |
-| Broker integration and chat in the web app (`app.js`) | Claude |
+| Broker integration, chat and demo sign-in in the web app (`app.js`) | Claude |
 | Automated tests, browser check and helper scripts | Claude |
 | System Design Document, Fault Test Report, README, runbook, diagrams, presentation slides | Drafted by Claude |
 | Test runs and recorded evidence in `docs/evidence/` | Run by Claude; the saved files are the real outputs |

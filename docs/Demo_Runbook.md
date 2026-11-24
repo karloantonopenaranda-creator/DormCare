@@ -35,14 +35,14 @@ and connects to the dashboard's broker (green **Live alerts** pill in the top ba
 
 | # | Do | Audience sees | Say |
 |---|---|---|---|
-| 1 | In DormCare as **Manager**: Announcements, pick Casa Jaro, post *"Water tank cleaning Friday"* | The dashboard's **Juan phone** receives it too | "The real app publishes to the same broker; any subscriber of casa-jaro.announcements gets it." |
-| 2 | Switch DormCare to **Tenant** (Juan) | Toast: *"Was waiting at the broker"*; it's in his bell | "Juan's web account is a durable subscriber; the notice waited in his queue." |
-| 3 | *(optional)* Open `http://127.0.0.1:8000/?role=manager` in a second window, update Juan's ticket in Maintenance | Juan's window: *"New alert: Maintenance update…"* | "Live delivery between two separate browser windows." |
+| 1 | In DormCare, sign in as **Manager** (`manager` / `manager123`): Announcements, pick Casa Jaro, post *"Water tank cleaning Friday"* | The dashboard's **Juan phone** receives it too | "The real app publishes to the same broker; any subscriber of casa-jaro.announcements gets it." |
+| 2 | Click the manager's name, **Log out**, and sign in as **Tenant** Juan (`juan` / `juan123`) | Toast: *"Was waiting at the broker"*; it's in his bell | "Juan's web account is a durable subscriber; the notice waited in his queue." |
+| 3 | *(optional)* Open `http://127.0.0.1:8000/?role=manager` in a second window, sign in as `manager`, update Juan's ticket in Maintenance | Juan's window: *"New alert: Maintenance update…"* | "Live delivery between two separate browser windows." |
 | 4 | *(optional)* Both windows on **Messages**: Juan asks *"Is the Wi-Fi down on the 2nd floor?"*, the manager replies | Bubbles appear live in the other window; each shows *"via the broker (#n)"* / *"sent through the broker (#n)"* | "Two-way chat: each conversation is its own topic, chat.u-juan. The website subscribes the manager to every conversation, each tenant only to theirs. There is no access control yet." |
 
 ## 1. Before the presentation (the day before, and again 10 minutes before)
 
-- [ ] Use **the laptop you will present on**. Run `scripts\run_tests.bat` and expect `Ran 95 tests ... OK`.
+- [ ] Use **the laptop you will present on**. Run `scripts\run_tests.bat` and expect `Ran 105 tests ... OK`.
 - [ ] Decide which version you'll show: the **web dashboard** (section 0, best on a projector) or the **terminal windows** (sections 2–3). Rehearse that one. Don't run both at once: they share broker port 5555.
 - [ ] Close every old demo window, then run `scripts\reset_data.bat` (empty queues give clean sequence numbers #1, #2, ...).
 - [ ] Set terminal font size to 16+ (right-click the title bar → Properties → Font) so the back row can read it.

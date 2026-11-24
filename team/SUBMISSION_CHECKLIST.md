@@ -26,7 +26,7 @@ The same document also prints **18 November** as "Due Date" on its cover table (
 
 ## Build and check
 
-- [ ] `scripts\run_tests.bat` gives `Ran 95 tests ... OK`.
+- [ ] `scripts\run_tests.bat` gives `Ran 105 tests ... OK`.
 - [ ] `scripts\make_submission.bat` creates `DormCare_Submission.zip` (no `_DRAFT`).
 - [ ] Open both Word documents **from inside the zip**: no yellow fields left.
 - [ ] Upload the zip to the course portal and keep the receipt.

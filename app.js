@@ -290,8 +290,50 @@ function load() {
 function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); } catch { /* storage unavailable: demo still works in-memory */ } }
 let S = load() || seed();
 const roleParam = new URLSearchParams(location.search).get('role');
-if (['manager', 'tenant', 'admin'].includes(roleParam)) S.role = roleParam;
 S.ui = { tenantTab: 'directory', rentTab: 'all', ex: { q: '', type: '', area: '', max: '', amen: '' }, ...S.ui, bell: false, profileMenu: false };
+
+/* ---------------- Sign-in (demo accounts) ----------------
+   One account per role, and one per tenant. The passwords are written here in plain text because this is a
+   front-end prototype: anyone can read them in this file. That keeps casual visitors of a shared demo link out,
+   but it is NOT security: a real system would check a password hash on the server and the broker would enforce
+   per-user access (README section 9). The signed-in account is kept per browser tab (sessionStorage), so two tabs
+   can be two different users, and closing the tab signs out. ?role= in the address only picks which tab of the
+   sign-in page is shown first; it no longer lets anyone in. */
+const ACCOUNTS = [
+  { username: 'manager', password: 'manager123', role: 'manager' },
+  { username: 'admin', password: 'admin123', role: 'admin' },
+  { username: 'juan', password: 'juan123', role: 'tenant', persona: 'u-juan' },
+  { username: 'ana', password: 'ana123', role: 'tenant', persona: 'u-ana' },
+];
+const ROLE_NAMES = { tenant: 'Tenant', manager: 'Manager', admin: 'Admin' };
+const SESSION_KEY = 'dormcare-session';
+const Auth = {
+  user: null,
+  loginRole: ['manager', 'tenant', 'admin'].includes(roleParam) ? roleParam : 'tenant',
+  error: '', typed: '',
+  account() {
+    if (!this.user) {
+      try { this.user = ACCOUNTS.find((a) => a.username === sessionStorage.getItem(SESSION_KEY)) || null; } catch { /* no storage */ }
+    }
+    return this.user;
+  },
+  // This tab's role and tenant come from the signed-in account, never from the state other tabs save.
+  apply(acc) { S.role = acc.role; if (acc.persona) S.persona = acc.persona; },
+  signIn(role, username, password) {
+    const name = username.trim().toLowerCase();
+    const acc = ACCOUNTS.find((a) => a.role === role && a.username === name && a.password === password);
+    if (!acc) return null;
+    this.user = acc;
+    try { sessionStorage.setItem(SESSION_KEY, acc.username); } catch { /* no storage: signed in until the page reloads */ }
+    this.apply(acc);
+    return acc;
+  },
+  signOut() {
+    this.user = null;
+    try { sessionStorage.removeItem(SESSION_KEY); } catch { /* no storage */ }
+  },
+};
+if (Auth.account()) Auth.apply(Auth.account());
 
 function commit() { save(); render(); }
 
@@ -490,14 +532,11 @@ function topbarHtml() {
     dd = `<div class="dropdown"><h4>Notifications <button class="btn xs ghost" data-act="read-all">Mark all read</button></h4><div class="scroll">${
       notifs.length ? notifs.slice(0, 12).map((n) => `<button class="item ${n.read ? '' : 'unread'}" data-act="open-notif" data-id="${n.id}"><span class="sq-ic">${icon('bell')}</span><div>${esc(n.text)}<small>${esc(n.at)}${n.broker ? ` · ${n.broker.queued ? 'waited at the broker' : 'live from the broker'} (#${n.broker.seq})` : ''}</small></div></button>`).join('') : empty('bell', 'All caught up', 'No notifications yet.')
     }</div></div>`;
-  } else if (S.ui.profileMenu && S.role === 'tenant') {
-    dd = `<div class="dropdown"><h4>Switch demo tenant account</h4>${S.personas.map((p) => `<button class="item ${p.id === S.persona ? 'unread' : ''}" data-act="persona" data-id="${p.id}">${avatar(p.name, 'sm')}<div>${esc(p.name)}<small>${esc(p.note)}</small></div></button>`).join('')}</div>`;
+  } else if (S.ui.profileMenu) {
+    dd = `<div class="dropdown"><h4>Signed in as ${esc(who.name)}</h4><button class="item" data-act="logout">${icon('logout')}<div>Log out<small>${ROLE_NAMES[S.role]} account · ${esc(Auth.account()?.username || '')}</small></div></button></div>`;
   }
   return `<button class="icon-btn menu-btn" data-act="open-nav" aria-label="Open menu">${icon('menu')}</button>
     <label class="search">${icon('search')}<input id="global-search" placeholder="${ph}" aria-label="Search"><kbd>/</kbd></label>
-    <div class="role-switch" role="group" aria-label="Demo role"><span class="lbl">View as</span>
-      ${['manager', 'tenant', 'admin'].map((r) => `<button class="${S.role === r ? 'on' : ''}" data-act="role" data-role="${r}">${{ manager: 'Manager', tenant: 'Tenant', admin: 'Admin' }[r]}</button>`).join('')}
-    </div>
     ${S.role === 'manager' ? `<button class="icon-btn" data-act="nav" data-to="listings" aria-label="Inquiries">${icon('mail')}${S.inquiries.some((q) => q.status === 'New') ? '<span class="dot"></span>' : ''}</button>` : ''}
     ${Broker.pill()}
     <button class="icon-btn" data-act="toggle-bell" aria-label="Notifications">${icon('bell')}${unread ? '<span class="dot"></span>' : ''}</button>
@@ -1104,7 +1143,44 @@ const VIEWS = {
   tenant: { mydorm: vMyDorm, bills: vBills, tickets: vTickets, notices: vNotices, messages: vMessages, explore: vExplore, join: vJoin },
   admin: { queue: vQueue, reports: vReports, subs: vSubs, audit: vAudit, explore: vExplore },
 };
+// The sign-in page, shown instead of the app until this tab has signed in.
+function loginHtml() {
+  const r = Auth.loginRole;
+  const lede = { tenant: 'Your bills, repair requests and notices from your boarding house.',
+    manager: 'Rooms, tenants, rent and announcements for your properties.',
+    admin: 'Property verification for the DormCare pilot.' }[r];
+  return `<main class="login-card" aria-labelledby="login-title">
+    <div class="brand"><span class="brand-mark">${icon('home')}</span><div>DormCare<small>Find Your Space. Manage Your Place.</small></div></div>
+    <div class="role-switch login-roles" role="group" aria-label="Account type">${['tenant', 'manager', 'admin'].map((x) =>
+      `<button type="button" class="${x === r ? 'on' : ''}" aria-pressed="${x === r}" data-act="login-role" data-role="${x}">${ROLE_NAMES[x]}</button>`).join('')}</div>
+    <h1 id="login-title">${ROLE_NAMES[r]} sign in</h1>
+    <p class="login-lede">${lede}</p>
+    <form class="stack" data-form="login">
+      <label class="field"><span>Username</span><input class="input" name="username" value="${esc(Auth.typed)}" autocomplete="username" autocapitalize="none" spellcheck="false" required></label>
+      <label class="field"><span>Password</span><input class="input" type="password" name="password" autocomplete="current-password" required></label>
+      ${Auth.error ? `<p class="login-error" role="alert">${esc(Auth.error)}</p>` : ''}
+      <button class="btn primary" type="submit">${icon('lock')}Sign in</button>
+    </form>
+    <p class="login-note">Prototype with demo accounts only. No real payments or personal data.</p>
+  </main>`;
+}
+
 function render() {
+  const signedIn = Auth.account();
+  $('#shell').hidden = !signedIn;
+  $('#login').hidden = !!signedIn;
+  if (!signedIn) {
+    // Rebuild only when something on the page changed: a save from another tab must not wipe what is being typed.
+    const key = `${Auth.loginRole}|${Auth.error}`;
+    if ($('#login').dataset.key !== key) {
+      $('#login').innerHTML = loginHtml();
+      $('#login').dataset.key = key;
+      $(Auth.error ? '#login [name=password]' : '#login [name=username]')?.focus();
+    }
+    return;
+  }
+  $('#login').innerHTML = '';
+  $('#login').dataset.key = '';
   const view = currentView();
   if (view === 'messages') Chat.markOpenThreadRead();
   const typing = document.activeElement && document.activeElement.id === 'chat-input';
@@ -1128,16 +1204,25 @@ const A = {
   'open-nav': () => $('#shell').classList.add('nav-open'),
   'close-nav': () => $('#shell').classList.remove('nav-open'),
   'close-modal': closeModal,
-  role: (d) => { S.role = d.role; S.ui.bell = false; S.ui.profileMenu = false; save(); go(DEFAULT_VIEW[d.role]); },
-  persona: (d) => { S.persona = d.id; S.ui.profileMenu = false; commit(); toast(`Now viewing as ${persona().name}`); },
+  'login-role': (d) => { Auth.loginRole = d.role; Auth.error = ''; render(); },
+  logout: () => {
+    Auth.signOut();
+    Broker.stop();
+    Auth.loginRole = S.role; Auth.error = ''; Auth.typed = '';
+    S.ui.bell = false; S.ui.profileMenu = false;
+    closeModal();
+    history.replaceState(null, '', location.pathname);
+    render();
+    toast('Signed out');
+  },
   'toggle-bell': () => { S.ui.bell = !S.ui.bell; S.ui.profileMenu = false; render(); },
-  'toggle-profile': () => { if (S.role !== 'tenant') return; S.ui.profileMenu = !S.ui.profileMenu; S.ui.bell = false; render(); },
+  'toggle-profile': () => { S.ui.profileMenu = !S.ui.profileMenu; S.ui.bell = false; render(); },
   'read-all': () => { myNotifs().forEach((n) => { n.read = true; }); commit(); },
   'open-notif': (d) => { const n = S.notifs.find((x) => x.id === d.id); n.read = true; S.ui.bell = false; save(); if (n.to) go(n.to); else render(); },
-  help: () => openModal('Demo guide', `<p>DormCare MVP is a clickable prototype with demo data stored in this browser. Switch roles in the top bar.</p>
+  help: () => openModal('Demo guide', `<p>DormCare MVP is a clickable prototype with demo data stored in this browser. To switch role, click your name (top right), log out and sign in with another demo account: <span class="code">manager</span> / <span class="code">manager123</span>, <span class="code">admin</span> / <span class="code">admin123</span>, tenants <span class="code">juan</span> / <span class="code">juan123</span> and <span class="code">ana</span> / <span class="code">ana123</span>.</p>
     <div class="list">
       <div class="li" style="align-items:flex-start"><span class="sq-ic">${icon('building')}</span><div class="body"><b>Manager</b><small style="white-space:normal">Approve join requests (capacity rules apply), review GCash proofs, split a utility bill, move tickets through statuses, post announcements, upload verification documents, publish listings.</small></div></div>
-      <div class="li" style="align-items:flex-start"><span class="sq-ic">${icon('home')}</span><div class="body"><b>Tenant</b><small style="white-space:normal">As Juan: submit payment proof, file a repair request. Switch to Ana (click the profile) and join with code <span class="code">CJD-7K2Q</span>, then approve her as Manager.</small></div></div>
+      <div class="li" style="align-items:flex-start"><span class="sq-ic">${icon('home')}</span><div class="body"><b>Tenant</b><small style="white-space:normal">As Juan: submit payment proof, file a repair request. Sign in as Ana and join with code <span class="code">CJD-7K2Q</span>, then approve her as Manager.</small></div></div>
       <div class="li" style="align-items:flex-start"><span class="sq-ic">${icon('shield')}</span><div class="body"><b>Admin</b><small style="white-space:normal">Approve Molo Bedspace Hub — then publish it from the Manager's Listings page and find it on Explore Rentals.</small></div></div>
     </div>${note('No real payments, documents or messages are processed. Use “Reset Demo Data” to start over.')}`),
   'broker-info': () => Broker.details(),
@@ -1410,6 +1495,22 @@ function decideVerification(p, status, noteText) {
    Forms (submit)
    ========================================================================= */
 const F = {
+  login: (v) => {
+    const acc = Auth.signIn(Auth.loginRole, v.username || '', v.password || '');
+    if (!acc) {
+      Auth.error = `No ${ROLE_NAMES[Auth.loginRole].toLowerCase()} account matches that username and password.`;
+      Auth.typed = v.username || '';
+      $('#login').dataset.key = '';  // show the message even if it is the same as last time
+      render();
+      return;
+    }
+    Auth.error = ''; Auth.typed = '';
+    S.ui.bell = false; S.ui.profileMenu = false;
+    save();
+    history.replaceState(null, '', location.pathname);  // drop ?role= and any old #page: start on this role's home
+    render();
+    toast(`Signed in as ${actorName()}`);
+  },
   'add-property': (v) => {
     const id = uid('p');
     S.properties.push({ id, owner: 'm1', name: v.name, type: v.type, area: v.area, address: `${v.address}, ${v.area}, Iloilo City`, verification: 'Draft', listed: false, hue: Math.floor(Math.random() * 360),
@@ -1632,6 +1733,11 @@ const Broker = {
     this.source.onmessage = (e) => this.onEvent(JSON.parse(e.data));
     this.source.onerror = () => this.setState('offline');
   },
+  stop() {  // signed out: this tab no longer receives anyone's alerts
+    if (this.source) this.source.close();
+    this.source = null; this.viewer = null; this.viewKey = '';
+    this.state = 'off';
+  },
   setState(state) {
     if (this.state === state) return;
     this.state = state;
@@ -1726,7 +1832,7 @@ const Broker = {
     const stateText = { live: 'Connected: alerts arrive live.', connecting: 'Connecting to the broker…', offline: 'The broker is not reachable. Alerts are kept locally until it is back.', off: '' }[this.state];
     openModal('Live alerts', `<p>Notifications in this DormCare demo travel through the publish-subscribe broker on port ${esc(this.info?.broker_port)}. ${stateText}</p>
       <div class="list mt">${rows}</div>
-      ${note('Messages for users who are not on screen wait in their queue at the broker. Switch role or tenant to receive them, or open a second window (for example <span class="code">?role=tenant</span>) to see them arrive live.')}`, { wide: true });
+      ${note('Messages for users who are not on screen wait in their queue at the broker. Log out and sign in as that user to receive them, or sign in as them in a second window (for example <span class="code">?role=tenant</span>) to see them arrive live.')}`, { wide: true });
   },
 };
 

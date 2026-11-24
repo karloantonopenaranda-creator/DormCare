@@ -492,3 +492,15 @@ textarea.input { resize: vertical; min-height: 90px; }
   .receipt, .receipt * { visibility: visible; }
   .receipt { position: absolute; left: 0; top: 0; width: 100%; }
 }
+
+/* ---------------- Sign-in page (demo accounts, see app.js) ---------------- */
+.shell[hidden], .login-root[hidden] { display: none !important; }
+.login-root { min-height: 100vh; display: grid; place-items: center; padding: 24px 16px; background: var(--page); }
+.login-card { width: 100%; max-width: 400px; background: var(--frame); border-radius: var(--radius); padding: 28px 26px 22px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 16px; }
+.login-card .brand { padding: 0; }
+.login-roles { margin-left: 0; order: 0; align-self: flex-start; background: var(--panel); }
+.login-card h1 { font-size: 22px; letter-spacing: -.02em; }
+.login-lede { color: var(--muted); font-size: 13.5px; margin-top: -10px; }
+.login-error { color: var(--bad); background: var(--bad-bg); border-radius: 12px; padding: 9px 12px; font-size: 13px; }
+.login-card .btn.primary { justify-content: center; }
+.login-note { color: var(--muted); font-size: 12px; text-align: center; }
